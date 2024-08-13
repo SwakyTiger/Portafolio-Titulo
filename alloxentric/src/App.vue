@@ -3,7 +3,10 @@
     <nav>
       <router-link to="/">Inicio</router-link>
       <router-link to="/planDetails">Planes</router-link>
+      <router-link to="/login">Login</router-link>
       <router-link to="/RegistroUsuario">Registrarse</router-link>
+      <router-link to="/CuadraturaMensual">Cuadratura Mensual</router-link>
+      
     </nav>
     <router-view/>
   </div>
