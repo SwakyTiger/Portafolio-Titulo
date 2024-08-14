@@ -15,3 +15,12 @@ class Venta(BaseModel):
     id_usuario: int
     id_plan: int
     fecha_venta: str
+
+class Usuario(BaseModel):
+    id_usuario: Optional[int]
+    nombre: str
+    apellido: str
+    prefijo: str
+    numero_telefono: int
+    email: str
+    pwd: str

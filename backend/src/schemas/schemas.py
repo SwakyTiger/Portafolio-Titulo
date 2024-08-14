@@ -24,3 +24,19 @@ def ventaEntity(item) -> dict:
 
 def ventasEntity(entity) -> list:
     return [ventaEntity(item) for item in entity]
+
+#ESQUEMA DE USUARIOS
+def usuarioEntity(item) -> dict:
+    return{
+        "id_usuario": item["id_usuario"],
+        "nombre": item["nombre"],
+        "apellido": item["apellido"],
+        "prefijo": item["prefijo"],
+        "numero_telefono": item["numero_telefono"],
+        "email": item["email"],
+        "pwd": item["pwd"]
+
+    }
+
+def usuariosEntity(entity) -> list:
+    return [usuarioEntity(item) for item in entity]

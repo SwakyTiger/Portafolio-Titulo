@@ -246,7 +246,6 @@ body {
   padding: 0;
   overflow-x: hidden; /* Oculta el desbordamiento horizontal en toda la página */
 }
-  
 
 .centered-container {
   display: flex;
