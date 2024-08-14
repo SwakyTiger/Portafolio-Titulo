@@ -4,6 +4,7 @@ import RegistroUsuario from '@/components/views/RegistroUsuario.vue'
 import crudPlanes from '@/components/views/crudPlanes.vue'
 import cuadraturaMensual from '@/components/views/cuadraturaMensual.vue'
 import login from '@/components/views/login.vue'
+import ventasReport from '@/components/views/ventasReport.vue'
 
 const routes = [
   {
@@ -30,6 +31,11 @@ const routes = [
     path: '/login',
     name: 'login',
     component: login
+  },
+  {
+    path: '/ventasReport',
+    name: 'ventasReport',
+    component: ventasReport
   }
 ]
 
