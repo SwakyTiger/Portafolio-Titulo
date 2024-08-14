@@ -3,13 +3,64 @@ from src.config.db import conn
 from ..schemas.schemas import ventaEntity, ventasEntity
 from ..models.models import Venta
 from starlette.status import HTTP_204_NO_CONTENT
+from .prefijos_paises import prefijos_paises
 
 
 ventas = APIRouter()
 
 @ventas.get('/ventas', tags=["ventas"])
 def find_all_ventas():
-    return ventasEntity(conn.alloxentric_db.ventas.find())
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "planes",
+                "localField": "id_plan",
+                "foreignField": "id_plan",
+                "as": "plan_info"
+            }
+        },
+        {
+            "$unwind": "$plan_info"
+        },
+        {
+            "$lookup": {
+                "from": "usuario",
+                "localField": "id_usuario",
+                "foreignField": "id_usuario",
+                "as": "usuario_info"
+            }
+        },
+        {
+            "$unwind": "$usuario_info"
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "id_venta": 1,
+                "id_usuario": 1,
+                "id_plan": 1,
+                "fecha_venta": 1,
+                "precio": "$plan_info.precio",
+                "nombre_plan": "$plan_info.nombre",
+                "nombre_usuario": "$usuario_info.nombre",
+                "apellido_usuario": "$usuario_info.apellido",
+                "prefijo": "$usuario_info.prefijo",
+                "numero_telefono": "$usuario_info.numero_telefono",
+                "email": "$usuario_info.email"
+            }
+        }
+    ]
+
+    ventas_list = list(conn.alloxentric_db.ventas.aggregate(pipeline))
+
+    # Agregar país a cada documento
+    for venta in ventas_list:
+        prefijo = venta.get("prefijo")
+        if prefijo:
+            venta["pais"] = prefijos_paises.get(prefijo, "Desconocido")
+
+    return ventas_list
+
 
 @ventas.post('/ventas', tags=["ventas"])
 def create_venta(venta: Venta):
