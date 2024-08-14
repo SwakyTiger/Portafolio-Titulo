@@ -66,11 +66,11 @@
               type="float"
               step="0.01"
             ></v-text-field>
-            <v-text-field
+            <v-textarea
               v-model="newPlan.descripcion"
               label="Descripcion"
               
-            ></v-text-field>
+            ></v-textarea>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -114,6 +114,11 @@
               type="number"
               step="0.01"
             ></v-text-field>
+            <v-textarea
+              v-model="selectedPlan.descripcion"
+              label="Descripcion"
+              
+            ></v-textarea>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -177,8 +182,15 @@ export default {
 
     async updatePlan() {
   try {
-    // Actualiza la fecha de modificación con el formato correcto
-    this.selectedPlan.fecha_modificacion = new Date().toISOString();
+    const now = new Date();
+    this.selectedPlan.fecha_modificacion = now.toLocaleString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
 
     // Envía la solicitud PUT al backend
     await axios.put(
@@ -194,13 +206,21 @@ export default {
   },
   async savePlan() {
   try {
+    const now = new Date();
     const planData = {
       id_plan: this.newPlan.id_plan,  // Asegúrate de que coincida con el modelo
       nombre: this.newPlan.nombre,
       precio: this.newPlan.precio,
       descripcion: this.newPlan.descripcion,
       total_segundos: this.newPlan.total_segundos,
-      fecha_modificacion: new Date().toISOString(),  // Formato ISO 8601
+      fecha_modificacion: this.newPlan.fecha_modificacion = now.toLocaleString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),  // Formato ISO 8601
     };
 
     await axios.post("http://localhost:8000/plans", planData);

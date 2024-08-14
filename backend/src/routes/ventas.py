@@ -4,12 +4,14 @@ from ..schemas.schemas import ventaEntity, ventasEntity
 from ..models.models import Venta
 from starlette.status import HTTP_204_NO_CONTENT
 from .prefijos_paises import prefijos_paises
+from datetime import datetime
+import logging
 
 
 ventas = APIRouter()
 
 @ventas.get('/ventas', tags=["ventas"])
-def find_all_ventas():
+async def get_ventas(anio: int = None, mes: int = None):
     pipeline = [
         {
             "$lookup": {
@@ -53,14 +55,11 @@ def find_all_ventas():
 
     ventas_list = list(conn.alloxentric_db.ventas.aggregate(pipeline))
 
-    # Agregar país a cada documento
     for venta in ventas_list:
         prefijo = venta.get("prefijo")
         if prefijo:
             venta["pais"] = prefijos_paises.get(prefijo, "Desconocido")
-
     return ventas_list
-
 
 @ventas.post('/ventas', tags=["ventas"])
 def create_venta(venta: Venta):
