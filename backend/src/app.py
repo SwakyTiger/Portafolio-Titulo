@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from src.routes.plans import plans
+from src.routes.ventas import ventas
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 app.include_router(plans)
+app.include_router(ventas)
 
 app.add_middleware(
     CORSMiddleware,

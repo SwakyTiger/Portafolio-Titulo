@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Response
 from src.config.db import conn
-from src.schemas.plans import planEntity, plansEntity
-from src.models.plan import Plan
+from ..schemas.schemas import planEntity, plansEntity
+from ..models.models import Plan
 from starlette.status import HTTP_204_NO_CONTENT
 
 

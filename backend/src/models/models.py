@@ -9,3 +9,9 @@ class Plan(BaseModel):
     precio: float
     descripcion: str
     total_segundos: int
+
+class Venta(BaseModel):
+    id_venta: int
+    id_usuario: int
+    id_plan: int
+    fecha_venta: str
