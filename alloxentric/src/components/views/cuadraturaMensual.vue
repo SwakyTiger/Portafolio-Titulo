@@ -1,73 +1,158 @@
 <template>
-  <div class="cuadratura-mensual">
+  <v-container class="cuadratura-mensual">
     <div class="header">
-      <h1 class="title">Cuadratura Mensual</h1> <!-- Título alineado a la izquierda -->
+      <h1 class="title">Cuadratura Mensual</h1>
     </div>
-    <div class="card">
+    <v-card class="card">
       <div class="content">
-        <div class="left-section">
-          <div class="search-bar" style="border-top: 2px;">
-            <input type="text" placeholder="Buscar usuario" />
-            <button class="filter-button">Filtrar por mes</button>
-          </div>
-          <div class="user-info" v-for="venta in ventas" :key="venta.id_venta">
-            <p>ID: {{ venta.id_venta }}</p>
-            <p>Tipo de plan: Normal</p>
-            <button class="details-button" @click="fetchUserData(1)">Detalle</button>
-          </div>
+        <v-card class="left-section">
           
-        </div>
-        <div class="right-section">
-          <h2>Información Detallada</h2>
-          <!-- Muestra solo cuando se haya cargado la información -->
-          <div v-if="userData">
-            <p><strong>ID:</strong> {{ userData.id }}</p>
-            <p><strong>Nombre:</strong> {{ userData.name }}</p>
-            <p><strong>Tipo de plan:</strong> {{ userData.plan }}</p>
-          </div>
-          <p v-else>No se ha seleccionado ningún usuario.</p>
-        </div>
+        </v-card>
+        <v-card class="right-section">
+          <v-data-table :items="ventas" :items-per-page="10" v-model:page="page" class="custom-table" hide-default-header>
+            <template v-slot:item="props">
+              <tr>
+                <td>ID venta: {{ props.item.id_venta }}</td>
+                <td>Tipo de plan: {{ props.item.nombre_plan }}</td>
+                <td>
+                  <v-btn @click="showDetails(props.item)" outlined>
+                    <template v-slot:prepend>
+                      <img :src="require('@/assets/icon-detalle.png')" alt="Detalles" class="custom-icon" />Detalle
+                    </template>
+                  </v-btn>
+                </td>
+              </tr>
+            </template>
+          </v-data-table>
+        </v-card>
       </div>
       <div class="footer">
-        <span class="footer-text">Total vendido: 220 USD</span>
-        <span class="footer-text">Clientes totales: 50</span>
+        <span class="footer-text">Total vendido: {{ formatCurrency(totalVenta) }}</span>
+        <span class="footer-text">Clientes totales: {{ totalClientes }}</span>
       </div>
-    </div>
-  </div>
+    </v-card>
+    <v-dialog v-model="dialog" max-width="600px">
+      <v-card>
+        <v-card-text>
+          <v-expansion-panels>
+            <v-expansion-panel>
+              <v-expansion-panel-content class="detalles">
+                <h1>Detalles de la Venta</h1>
+                <h4>Detalles del Comprador</h4>
+                <p>- Nombre: {{ selectedVenta.nombre_usuario }} {{ selectedVenta.apellido_usuario }}</p>
+                <p>- Correo: {{ selectedVenta.email }} </p>
+                <p>- País: {{ selectedVenta.pais }} </p>
+                <p>- Numero Telefónico: {{ selectedVenta.prefijo }} {{ selectedVenta.numero_telefono }}</p>
+                <h4>Detalles de Compra</h4>
+                <p>- Tipo de plan: {{ selectedVenta.nombre_plan }}</p>
+                <p>- Precio: {{ formatCurrency(selectedVenta.precio) }}</p>
+                <p>- Fecha de Venta: {{ selectedVenta.fecha_venta }}</p>
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="dialog = false">Cerrar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>
 
 <script>
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import axios from 'axios';
 
 export default {
-data() {
-  return {
-    ventas: []
-  }
-},
-created() {
-  this.fetchVentas();
-},
-methods: {
-  async fetchVentas() {
-    try {
-      const response = await axios.get('http://localhost:8000/ventas');
-      this.ventas = response.data;
-    } catch (error) {
-      console.error("Error fetching ventas:", error);
+  name: 'VentasReport',
+  data() {
+    return {
+      page: 1,
+      ventas: [],  // Datos de la API
+      totalVenta: 0,    // Total de ventas
+      totalClientes: 0, // Número total de clientes
+      headers: [
+        { title: 'Código', value: 'id_venta' },
+        { title: 'Fecha/Hora', value: 'fecha_venta' },
+        { title: 'Tipo de Plan', value: 'nombre_plan' },
+        { title: 'Precio', value: 'precio' },
+        { title: 'Detalles de compra', value: 'details' }
+      ],
+      dialog: false,
+      selectedVenta: {}
+      // Detalles de la venta seleccionada
     }
+  },
+  methods: {
+    async fetchVentas() {
+      try {
+        const response = await axios.get('http://localhost:8000/ventas');
+        this.ventas = response.data;
+        this.calculateTotals();
+      } catch (error) {
+        console.error('Error fetching items:', error);
+      }
+    },
+    showDetails(venta) {
+      this.selectedVenta = venta;
+      this.dialog = true;
+    },
+    formatCurrency(amount) {
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(amount);
+    },
+    calculateTotals() {
+      this.totalVenta = this.ventas.reduce((sum, venta) => sum + venta.precio, 0);
+
+      const uniqueClients = new Set(this.ventas.map(venta => venta.id_usuario));
+      this.totalClientes = uniqueClients.size;
+    },
+    generatePDF() {
+      const doc = new jsPDF();
+
+      // Título
+      doc.setFontSize(18);
+      doc.text('Administrador de Ventas', 14, 22);
+
+      // Agregar tabla
+      const columns = ["Código de Venta", "Fecha", "Tipo de Plan", "Precio"];
+      const rows = this.ventas.map(item => [
+        item.id_venta,
+        item.fecha_venta,
+        item.nombre_plan,
+        this.formatCurrency(item.precio)
+      ]);
+
+      doc.autoTable({
+        startY: 30,
+        head: [columns],
+        body: rows,
+        theme: 'grid',
+      });
+
+      // Total de ventas
+      doc.text(`Total de ventas: ${this.formatCurrency(this.totalVenta)}`, 14, doc.lastAutoTable.finalY + 10);
+
+      // Guardar el PDF
+      doc.save('reporte_ventas.pdf');
+    }
+  },
+  mounted() {
+    this.fetchVentas();
   }
-}
 }
 </script>
-
 <style scoped>
 .cuadratura-mensual {
   display: flex;
   flex-direction: column; /* Para apilar el título y el contenido */
   align-items: center; /* Centra horizontalmente el contenedor */
-  height: 100vh;
-  background-color: #f0f0f0; /* Fondo gris claro para contraste */
+  background-color: #ffffff; /* Fondo gris claro para contraste */
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
 }
 
 .header {
@@ -108,7 +193,11 @@ methods: {
   flex-direction: column;
   border-right: 1px solid black;
 }
-
+.right-section {
+  width: 70%;
+  padding: 20px;
+  box-sizing: border-box;
+}
 .search-bar {
   display: flex;
   align-items: center;
@@ -157,12 +246,6 @@ input[type="text"] {
   background-color: #005f4f; /* Color del botón al pasar el mouse */
 }
 
-.right-section {
-  width: 70%;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
 .footer {
   background-color: #007E6F; 
   padding: 10px;
@@ -177,4 +260,11 @@ input[type="text"] {
   font-size: 1.2em; /* Tamaño de fuente más grande */
   margin-right: 40px; /* Espacio entre los textos */
 }
+.custom-table { /* tabla de informacion de cuadro de izquierda */
+  width: 100%;
+  border-radius: 5px;
+  box-sizing: border-box; /* Asegura que el padding y el borde estén incluidos en el ancho total */
+  background-color: #ffffff;
+}
+
 </style>
