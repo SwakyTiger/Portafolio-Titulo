@@ -11,7 +11,7 @@
             </v-card-title>
             
             <v-card-subtitle class="text-h3 text-center pt-2 ">
-              ${{ plan.precio }} USD
+              ${{ plan.precio / 100 }} USD
             </v-card-subtitle>
           </v-card-item>
           
@@ -24,7 +24,7 @@
           <v-spacer></v-spacer>
           
           <v-card-actions class="justify-center pb-4">
-            <v-btn variant="elevated" color="black">CONTRATAR</v-btn>
+            <v-btn variant="elevated" color="black" @click="realizarPago(plan)">CONTRATAR</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -52,7 +52,25 @@ export default {
       } catch (error) {
         console.error("Error fetching plans:", error);
       }
+    },
+    async realizarPago(plan) {
+    try {
+      const response = await axios.post('http://localhost:8000/create-checkout-session', {
+        plan_name: plan.nombre,
+        price: plan.precio,
+        user_email: "usuario@example.com"
+      });
+      console.log(response.data)
+      // Verifica que la URL no esté indefinida
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      } else {
+        console.error("URL de Stripe no recibida:", response.data);
+      }
+    } catch (error) {
+      console.error("Error al iniciar el pago:", error);
     }
+  }
   }
 }
 </script>

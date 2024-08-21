@@ -17,6 +17,7 @@
           <router-link to="/CuadraturaMensual">Cuadratura Mensual</router-link>
           <router-link to="/crudPlanes">Administrador de Planes</router-link>
           <router-link to="/ventasReport">Administrador de Ventas</router-link>
+          <router-link to="/resumenPago">PRUEBA</router-link>
         </nav>
 
         <!-- menu-->

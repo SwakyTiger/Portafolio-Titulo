@@ -5,6 +5,7 @@ import crudPlanes from '@/components/views/crudPlanes.vue'
 import cuadraturaMensual from '@/components/views/cuadraturaMensual.vue'
 import login from '@/components/views/login.vue'
 import ventasReport from '@/components/views/ventasReport.vue'
+import resumenPago from '@/components/views/resumenPago.vue'
 
 const routes = [
   {
@@ -36,6 +37,11 @@ const routes = [
     path: '/ventasReport',
     name: 'ventasReport',
     component: ventasReport
+  },
+  {
+    path: '/resumenPago',
+    name: 'resumenPago',
+    component: resumenPago
   }
 ]
 

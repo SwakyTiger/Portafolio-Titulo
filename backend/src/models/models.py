@@ -24,3 +24,8 @@ class Usuario(BaseModel):
     numero_telefono: int
     email: str
     pwd: str
+
+class CreateCheckoutSession(BaseModel):
+    price: int
+    plan_name: str
+    user_email: str
