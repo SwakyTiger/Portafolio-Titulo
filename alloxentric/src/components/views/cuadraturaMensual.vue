@@ -6,10 +6,30 @@
     <v-card class="card">
       <div class="content">
         <v-card class="left-section">
-          
+          <!-- Filtro de tipo de plan -->
+          <v-select 
+            label="Filtrar por tipo de Plan" 
+            :items="planTypes" 
+            v-model="selectedPlanType"
+          >
+            <template v-slot:prepend-item>
+              <v-list-item ripple @click="clearFilter">
+                <v-list-item-content>
+                  <v-list-item-title>Mostrar todos</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-select>
         </v-card>
         <v-card class="right-section">
-          <v-data-table :items="ventas" :items-per-page="10" v-model:page="page" class="custom-table" hide-default-header>
+          <v-data-table 
+            :headers="headers"
+            :items="filteredVentas"
+            :items-per-page="10" 
+            v-model:page="page" 
+            class="custom-table" 
+            hide-default-header
+          >
             <template v-slot:item="props">
               <tr>
                 <td>ID venta: {{ props.item.id_venta }}</td>
@@ -60,6 +80,7 @@
   </v-container>
 </template>
 
+
 <script>
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -81,8 +102,15 @@ export default {
         { title: 'Detalles de compra', value: 'details' }
       ],
       dialog: false,
-      selectedVenta: {}
-      // Detalles de la venta seleccionada
+      selectedVenta: {},
+      selectedPlanType: null,
+      planTypes: []  // Array para los tipos de planes únicos
+    }
+  },
+  computed: {
+    filteredVentas() {
+      if (!this.selectedPlanType) return this.ventas;
+      return this.ventas.filter(venta => venta.nombre_plan === this.selectedPlanType);
     }
   },
   methods: {
@@ -91,6 +119,9 @@ export default {
         const response = await axios.get('http://localhost:8000/ventas');
         this.ventas = response.data;
         this.calculateTotals();
+
+        // Obtener los tipos de planes únicos para el filtro
+        this.planTypes = [...new Set(this.ventas.map(venta => venta.nombre_plan))];
       } catch (error) {
         console.error('Error fetching items:', error);
       }
@@ -107,6 +138,9 @@ export default {
 
       const uniqueClients = new Set(this.ventas.map(venta => venta.id_usuario));
       this.totalClientes = uniqueClients.size;
+    },
+    clearFilter() {
+      this.selectedPlanType = null;
     },
     generatePDF() {
       const doc = new jsPDF();
@@ -143,6 +177,7 @@ export default {
   }
 }
 </script>
+
 <style scoped>
 .cuadratura-mensual {
   display: flex;
@@ -257,14 +292,8 @@ input[type="text"] {
 
 .footer-text {
   color: #fff;
-  font-size: 1.2em; /* Tamaño de fuente más grande */
-  margin-right: 40px; /* Espacio entre los textos */
+  font-size: 1.2em; /* Tamaño de fuente más grande para el total de ventas */
+  font-weight: bold; /* Negrita */
+  margin-right: 20px; /* Espacio entre el total y los clientes */
 }
-.custom-table { /* tabla de informacion de cuadro de izquierda */
-  width: 100%;
-  border-radius: 5px;
-  box-sizing: border-box; /* Asegura que el padding y el borde estén incluidos en el ancho total */
-  background-color: #ffffff;
-}
-
 </style>
