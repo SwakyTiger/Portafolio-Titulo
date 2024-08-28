@@ -18,9 +18,13 @@
           <router-link to="/crudPlanes">Administrador de Planes</router-link>
           <router-link to="/ventasReport">Administrador de Ventas</router-link>
           <router-link to="/resumenPago">PRUEBA</router-link>
+          <v-btn @click="handleAuthAction" color="primary" id="authButton">
+          {{ isAuthenticated ? 'Logout' : 'Login' }}
+          </v-btn>
         </nav>
 
-        <!-- menu-->
+
+        <!-- Menú -->
         <v-app-bar-nav-icon @click="drawer = !drawer" class="d-md-none"></v-app-bar-nav-icon>
       </v-container>
     </v-app-bar>
@@ -43,6 +47,11 @@
         <v-list-item>
           <router-link to="/crudPlanes">Administrador de Planes</router-link>
         </v-list-item>
+        <v-list-item>
+          <v-btn @click="handleAuthAction" color="primary" id="authButton">
+          {{ isAuthenticated ? 'Logout' : 'Login' }}
+          </v-btn>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
@@ -58,6 +67,7 @@
 
 <script>
 import MainFooter from '@/components/views/MainFooter.vue';
+import keycloak from '@/keycloak'; // Asegúrate de importar tu instancia de Keycloak
 
 export default {
   name: 'App',
@@ -66,7 +76,26 @@ export default {
   },
   data() {
     return {
-      drawer: false
+      drawer: false,
+      isAuthenticated: keycloak.authenticated // Estado de autenticación
+    };
+  },
+  methods: {
+    handleAuthAction() {
+      if (this.isAuthenticated) {
+        keycloak.logout(); // Cierra sesión
+      } else {
+        keycloak.login(); // Inicia sesión
+      }
+    }
+  },
+  mounted() {
+    // Escuchar los cambios de autenticación de Keycloak
+    keycloak.onAuthSuccess = () => {
+      this.isAuthenticated = true;
+    };
+    keycloak.onAuthLogout = () => {
+      this.isAuthenticated = false;
     };
   }
 }
