@@ -14,7 +14,7 @@ class Venta(BaseModel):
     id_venta: int
     id_usuario: int
     id_plan: int
-    fecha_venta: str
+    fecha_venta: datetime
 
 class Usuario(BaseModel):
     id_usuario: Optional[int]

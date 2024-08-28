@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Response
+from fastapi import APIRouter, HTTPException, status, Response, Query
 from src.config.db import conn
 from ..schemas.schemas import ventaEntity, ventasEntity
 from ..models.models import Venta
@@ -53,12 +53,47 @@ async def get_ventas(anio: int = None, mes: int = None):
         }
     ]
 
+    # Aplicar filtros solo si se proporcionan anio y mes
+    if anio is not None and mes is not None:
+        pipeline.insert(0, {
+            "$match": {
+                "$expr": {
+                    "$and": [
+                        {"$eq": [{"$year": "$fecha_venta"}, anio]},
+                        {"$eq": [{"$month": "$fecha_venta"}, mes]}
+                    ]
+                }
+            }
+        })
+    elif anio is not None:
+        pipeline.insert(0, {
+            "$match": {
+                "$expr": {
+                    "$and": [
+                        {"$eq": [{"$year": "$fecha_venta"}, anio]}
+                    ]
+                }
+            }
+        })
+    elif mes is not None:
+        pipeline.insert(0, {
+            "$match": {
+                "$expr": {
+                    "$and": [
+                        {"$eq": [{"$month": "$fecha_venta"}, mes]}
+                    ]
+                }
+            }
+        })
+
     ventas_list = list(conn.alloxentric_db.ventas.aggregate(pipeline))
 
+    # Aplicar filtro de prefijos
     for venta in ventas_list:
         prefijo = venta.get("prefijo")
         if prefijo:
             venta["pais"] = prefijos_paises.get(prefijo, "Desconocido")
+    
     return ventas_list
 
 @ventas.post('/ventas', tags=["ventas"])
