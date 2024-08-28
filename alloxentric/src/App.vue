@@ -17,7 +17,8 @@
           <router-link to="/CuadraturaMensual">Cuadratura Mensual</router-link>
           <router-link to="/crudPlanes">Administrador de Planes</router-link>
           <router-link to="/ventasReport">Administrador de Ventas</router-link>
-          <router-link to="/resumenPago">PRUEBA</router-link>
+          <router-link to="/resumenPago">Resumen Pago Prueba</router-link>
+          <router-link to="/pagoRealizado">Pago Exitoso Prueba</router-link>
           <v-btn @click="handleAuthAction" color="primary" id="authButton">
           {{ isAuthenticated ? 'Logout' : 'Login' }}
           </v-btn>

@@ -14,6 +14,7 @@
     "core-js": "^3.8.3",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
+    "keycloak-js": "^25.0.4",
     "roboto-fontface": "*",
     "vue": "^3.2.13",
     "vue-router": "^4.4.0",
