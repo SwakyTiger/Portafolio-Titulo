@@ -14,9 +14,9 @@
           <router-link to="/">Inicio</router-link>
           <router-link to="/planDetails">Planes</router-link>
           <router-link to="/RegistroUsuario">Registrarse</router-link>
-          <router-link to="/CuadraturaMensual">Cuadratura Mensual</router-link>
-          <router-link to="/crudPlanes">Administrador de Planes</router-link>
-          <router-link to="/ventasReport">Administrador de Ventas</router-link>
+          <router-link v-if="isAdmin" to="/CuadraturaMensual">Cuadratura Mensual</router-link>
+          <router-link v-if="isAdmin" to="/crudPlanes">Administrador de Planes</router-link>
+          <router-link v-if="isAdmin" to="/ventasReport">Administrador de Ventas</router-link>
           <router-link to="/resumenPago">Resumen Pago Prueba</router-link>
           <router-link to="/pagoRealizado">Pago Exitoso Prueba</router-link>
           <v-btn @click="handleAuthAction" color="primary" id="authButton">
@@ -68,7 +68,7 @@
 
 <script>
 import MainFooter from '@/components/views/MainFooter.vue';
-import keycloak from '@/keycloak'; // Asegúrate de importar tu instancia de Keycloak
+import keycloak from '@/keycloak'; // Importa tu instancia de Keycloak
 
 export default {
   name: 'App',
@@ -78,7 +78,8 @@ export default {
   data() {
     return {
       drawer: false,
-      isAuthenticated: keycloak.authenticated // Estado de autenticación
+      isAuthenticated: false, // Estado de autenticación
+      isAdmin: false // Estado para verificar si el usuario es admin
     };
   },
   methods: {
@@ -88,15 +89,31 @@ export default {
       } else {
         keycloak.login(); // Inicia sesión
       }
+    },
+    checkUserRole() {
+      if (this.isAuthenticated) {
+        // Obtén el token del usuario
+        const token = keycloak.tokenParsed;
+
+        // Verifica si el usuario tiene el rol 'admin' en el cliente 'transcriptor_alloxentric'
+        const clientRoles = token.resource_access?.['transcriptor_alloxentric']?.roles || [];
+        this.isAdmin = clientRoles.includes('admin');
+      }
     }
   },
   mounted() {
+    // Verificar el estado de autenticación al montar el componente
+    this.isAuthenticated = keycloak.authenticated;
+    this.checkUserRole();
+
     // Escuchar los cambios de autenticación de Keycloak
     keycloak.onAuthSuccess = () => {
       this.isAuthenticated = true;
+      this.checkUserRole(); // Verifica el rol del usuario cuando se autentique
     };
     keycloak.onAuthLogout = () => {
       this.isAuthenticated = false;
+      this.isAdmin = false; // Restablece el rol de admin cuando se cierre sesión
     };
   }
 }
@@ -125,5 +142,21 @@ nav a {
 
 .v-main {
   flex: 1;
+}
+
+#authButton {
+  color: #42b983;
+  font-family: 'Roboto', sans-serif;
+  text-transform: none;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+#authButton:hover {
+  background: none;
 }
 </style>
