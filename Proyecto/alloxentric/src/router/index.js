@@ -7,6 +7,7 @@ import login from '@/components/views/login.vue'
 import ventasReport from '@/components/views/ventasReport.vue'
 import resumenPago from '@/components/views/resumenPago.vue'
 import pagoRealizado from '@/components/views/pagoRealizado.vue'
+import historyTranscriptor from '@/components/views/historyTranscriptor.vue'
 import keycloak from '@/keycloak';
 
 const routes = [
@@ -52,6 +53,11 @@ const routes = [
     path: '/pagoRealizado',
     name: 'pagoRealizado',
     component: pagoRealizado
+  },
+  {
+    path: '/historyTranscriptor',
+    name: 'historyTranscriptor',
+    component: historyTranscriptor
   }
 ]
 
