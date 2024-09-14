@@ -20,9 +20,9 @@
           <router-link to="/resumenPago">Resumen Pago Prueba</router-link>
           <router-link to="/pagoRealizado">Pago Exitoso Prueba</router-link>
           <router-link to="/historyTranscriptor">Historial</router-link>
-          <v-btn @click="handleAuthAction" color="primary" id="authButton">
+          <v-link @click="handleAuthAction" id="authButton">
           {{ isAuthenticated ? 'Logout' : 'Login' }}
-          </v-btn>
+          </v-link>
         </nav>
 
 
@@ -50,9 +50,9 @@
           <router-link to="/crudPlanes">Administrador de Planes</router-link>
         </v-list-item>
         <v-list-item>
-          <v-btn @click="handleAuthAction" color="primary" id="authButton">
+          <v-link @click="handleAuthAction" id="authButton">
           {{ isAuthenticated ? 'Logout' : 'Login' }}
-          </v-btn>
+          </v-link>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
