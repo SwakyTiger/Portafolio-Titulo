@@ -18,7 +18,6 @@
           <router-link v-if="isAdmin" to="/crudPlanes">Administrador de Planes</router-link>
           <router-link v-if="isAdmin" to="/ventasReport">Administrador de Ventas</router-link>
           <router-link to="/resumenPago">Resumen Pago Prueba</router-link>
-          <router-link to="/pagoRealizado">Pago Exitoso Prueba</router-link>
           <router-link to="/historyTranscriptor">Historial</router-link>
           <v-link @click="handleAuthAction" id="authButton">
           {{ isAuthenticated ? 'Logout' : 'Login' }}
