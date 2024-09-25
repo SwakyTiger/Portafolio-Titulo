@@ -8,6 +8,7 @@ import ventasReport from '@/components/views/ventasReport.vue'
 import resumenPago from '@/components/views/resumenPago.vue'
 import pagoRealizado from '@/components/views/pagoRealizado.vue'
 import historyTranscriptor from '@/components/views/historyTranscriptor.vue'
+import miCuenta from '@/components/views/miCuenta.vue'
 import keycloak from '@/keycloak';
 
 const routes = [
@@ -58,6 +59,11 @@ const routes = [
     path: '/historyTranscriptor',
     name: 'historyTranscriptor',
     component: historyTranscriptor
+  },
+  {
+    path: '/miCuenta',
+    name: 'miCuenta',
+    component: miCuenta
   }
 ]
 

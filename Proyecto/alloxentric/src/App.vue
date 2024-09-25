@@ -22,6 +22,12 @@
           <v-link @click="handleAuthAction" id="authButton">
           {{ isAuthenticated ? 'Logout' : 'Login' }}
           </v-link>
+          <router-link v-if="isAuthenticated" to="/miCuenta">
+            <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')"
+              subtitle="Bienvenido"
+              :title="userName"
+              ></v-list-item>
+          </router-link>
         </nav>
 
 
@@ -99,6 +105,18 @@ export default {
         const clientRoles = token.resource_access?.['transcriptor_alloxentric']?.roles || [];
         this.isAdmin = clientRoles.includes('admin');
       }
+    },
+    get_name_user() {
+      if (keycloak.authenticated) {
+        const token = keycloak.tokenParsed;
+
+        // Aquí asumo que el nombre y el apellido están en las propiedades 'given_name' y 'family_name'.
+        const firstName = token.given_name; // Cambia esto si el nombre está en otro campo
+        const lastName = token.family_name; // Cambia esto si el apellido está en otro campo
+
+        return `${firstName} ${lastName}`; // Retorna el nombre completo
+      }
+      return ''; // Retorna vacío si no está autenticado
     }
   },
   mounted() {
@@ -115,6 +133,8 @@ export default {
       this.isAuthenticated = false;
       this.isAdmin = false; // Restablece el rol de admin cuando se cierre sesión
     };
+
+    this.userName = this.get_name_user();
   }
 }
 </script>
