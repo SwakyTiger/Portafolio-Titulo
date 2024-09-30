@@ -1,0 +1,70 @@
+﻿outputmacro: ^testfn variable ()
+# if ($__0 == %user ) {
+#
+#  $telefono = $__0
+#  $numdoc = $__1
+#  $campana = $__2
+#  $nombre = $__3
+#  $$user = True 
+#
+#}
+outputmacro: ^myfunc1(^resp)
+^resp
+
+
+topic: ~datos keep repeat ()
+
+
+u: (%hour>=12) $buendia = una_buena_tarde  $buenosdias = Buenas_Tardes
+
+u: (%hour<12) $buendia = un_buen_día   $buenosdias = Buenos_Dias
+
+
+#u: () $nombre = Cristóbal
+
+#u: () $apellido = Valenzuela
+
+#u: () $tenencia = Juan_Perez
+
+#u: () $campana = Enel
+
+#u: () $dia = 1_marzo_del_2019
+
+#u: () $hora = 19_horas
+
+#u: () $deuda = Barros_Luco
+
+#u: () $date = %date + 5
+
+#u: () $month = %month
+
+#u: ($date>30) $month += 1
+
+#u: () ^jsonreadcsv( TAB RAWDATA/ORSAN/ORSAN_VALIDARDIRECCION/_DATOS/datos.txt '^testfn )
+
+#u: () $fecha = ^popen( ^join( "python3 dia2num.py " $date) '^myfunc1)
+
+#u: () $month = ^popen( ^join( "python3 month2word.py " $month) '^myfunc1)
+
+u: (\[ _*1 \])  $data = ^jsonparse(transient NOFAIL  _0 )
+
+u: () $ncom = $data.datos_contacto.nombre
+
+u: () $campana = $data.datos_contacto.campana
+
+u: () $comuna = $data.datos_contacto.comuna
+
+u: () $numdir = $data.datos_contacto.numdir
+
+u: () $direccion = $data.datos_contacto.direccion
+
+u: () $transfer = $data.datos_contacto.anexo
+
+u: () $remesa = $data.datos_contacto.idremesa
+
+u: () $tel = $data.datos_contacto.telcontacto
+
+u: () $rut = $data.datos_contacto.numident
+
+u: () $anexo = ^join("#" $transfer "|" $rut "|" $remesa "|" $tel)
+

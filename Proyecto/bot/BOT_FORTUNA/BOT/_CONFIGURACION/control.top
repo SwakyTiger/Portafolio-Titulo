@@ -1,0 +1,82 @@
+﻿topic: ~control repeat system ()
+
+u: ()
+
+
+# INICIO CONVERSACION ____________________________
+#Este if es para que cuando se haga un reset el bot no responda nada
+if ( %input < %userfirstline) { 	
+      	
+	}
+
+#Primera entrada despues del reset
+#Se usa para pasarle datos de contacto al bot y dar la primera respuesta
+if ( %input == %userfirstline) { 
+	^respond(~datos)
+	^nofail(TOPIC ^respond(~intro))
+	^nofail(TOPIC ^gambit(~intro))  }
+
+
+
+
+# REPLICAS _______________________________________
+
+
+^nofail(TOPIC ^rejoinder())
+
+
+
+
+# TEMAS __________________________________________
+
+if ( %response == 0 AND !$$boton ){
+
+@8 = ^query( direct_sv topickeyword member ? )	
+
+$$respuesta = %response
+loop() { $$topic = first(@8object)
+	 nofail(TOPIC ^respond($$topic)) 
+
+	if (%response > 0) { ^end(RULE) }
+
+	}
+
+	if ( %response > $$respuesta ){
+
+		$$respuesta_topic = True
+
+#if ( !$estado AND !%outputrejoinder ){
+#OJO, al combinar respuesta con tarea. El primer rejoinder es el que cuenta (~help.CONTINUAR), el de la tarea no se agregará. Arreglar eso.
+
+		if ( !%outputrejoinder ){
+
+			^setrejoinder( OUTPUT ~help.CONTINUAR ) 
+		}
+
+	}
+}
+
+if ($$respuesta_topic) { ^end(TOPIC) }
+
+# TAREAS ______________________________________________________
+
+
+^nofail(TOPIC ^gambit($estado))
+
+^nofail(TOPIC ^respond($estado))
+
+
+
+
+# DESCONOCIDO - NOSE ___________________________________________
+
+
+if (%response == 0) {
+
+	nofail(TOPIC ^respond(~nose))  }
+
+
+
+
+
+

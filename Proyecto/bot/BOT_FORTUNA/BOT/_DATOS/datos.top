@@ -1,0 +1,41 @@
+﻿outputmacro: ^testfn variable ()
+
+outputmacro: ^myfunc1(^resp)
+^resp
+
+topic: ~datos keep repeat ()
+
+u: (\[ _*1 \])  $$data_obb = ^jsonparse(transient NOFAIL  _0 )
+
+u: (!$obbdatos)
+	$obbdatos=1
+	$_endpoint = ^"http://34.0.57.244:5078/userdata"
+
+	$_username = $$data_obb.username
+	$_password = $$data_obb.password
+	$_idconversacion = $$data_obb.idconversacion
+	$_url = ^join($_endpoint ? username = $_username & password = $_password & id_conversacion = $_idconversacion)
+
+	$_header = ^" ~Accept: application/json ~Content-Type: application/json "
+
+	$$data = ^jsonopen(direct GET $_url "" $_header)
+	$$data = ^jsonparse(transient NOFAIL $$data )
+
+  	$nombre = $$data.datos_contacto.NOMBRE_CLIENTE
+  	$fecha_deuda = $$data.datos_contacto.FECHA_DEUDA
+	
+	# $fecha_deuda = ^"01-01-1991"
+
+	$_endpoint = ^"http://34.0.57.244:5078/bots/utils/datetoword/"
+	$_header = ^" ~Accept: application/json ~Content-Type: application/json "
+	$_url = ^join($_endpoint ? date = $fecha_deuda)
+	$$dato = ^jsonopen(direct POST $_url "" $_header)
+	$$dato =  ^jsonparse(transient NOFAIL $$dato )
+	$fecha = $$dato[0].converted
+	
+	# $trunk = ^"netuno/"
+	# $prefix = ^"8812611"
+	# TEST CHILE NICOLÁS # $transfer_number = ^"56972078230"
+	$trunk = ^"fortuna-claro/"
+	$transfer_number = ^"946273006"
+	$anexo = ^join( $trunk $transfer_number )
