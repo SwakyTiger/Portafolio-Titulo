@@ -1,0 +1,21 @@
+﻿
+topic: ~preguntas keep repeat ( topickeyword )
+
+
+
+u: ADIOS	( [~adios ~ok] ) 
+		Adios.
+
+u: ADIOS	( gracias %length<=3 ) 
+		De nada.
+
+
+
+	
+
+
+
+
+
+
+
