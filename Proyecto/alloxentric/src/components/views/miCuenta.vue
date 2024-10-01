@@ -2,29 +2,58 @@
     <v-container class="centered-container">
         <v-card class="custom-card">
             <v-card-title class="custom-title">
-
+                <h1>Mi Cuenta</h1>
             </v-card-title>
-            <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')" :title="userName"
+            <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')" :title="fullName"
                 class="avatar-item"></v-list-item>
 
             <v-card class="contenedor">
                 <v-layout permanent density="compact">
                     <v-navigation-drawer permanent>
                         <v-list density="compact" nav>
-                            <v-list-item prepend-icon="mdi-view-dashboard" title="Mi Cuenta" value="home"></v-list-item>
-                            <v-list-item prepend-icon="mdi-forum" title="Historial" value="about"></v-list-item>
+                            <v-list-item prepend-icon="mdi-view-dashboard" title="Mi Cuenta" value="home"
+                                to="/miCuenta"></v-list-item>
+                            <v-list-item prepend-icon="mdi-forum" title="Historial" value="about"
+                                to="/historyTranscriptor"></v-list-item>
+                            <v-list-item prepend-icon="mdi mdi-logout" id="authButton" @click="handleAuthAction">{{
+                                isAuthenticated ? 'Cerrar Sesion' : '' }}</v-list-item>
                         </v-list>
+                        
                     </v-navigation-drawer>
                     <v-main style="height: 250px"></v-main>
                 </v-layout>
                 <v-card class="info">
-                    <v-form disabled style="color: black; ">
-                        <v-text-field v-model="fullName" label="Nombre" ></v-text-field>
-                        <v-text-field v-model="userName" label="Nombre de Usuario"></v-text-field>
-                        <v-text-field v-model="email" label="Correo"></v-text-field>
-                        <v-text-field v-model="phoneNumber" label="Last name"></v-text-field>
-                    </v-form>
+                    <v-list>
+                        <v-list-item>
+                            <v-list-item-content>
+                                <v-list-item-title>Nombre</v-list-item-title>
+                                <v-list-item-subtitle>{{ fullName }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                        </v-list-item>
+
+                        <v-list-item>
+                            <v-list-item-content>
+                                <v-list-item-title>Nombre de Usuario</v-list-item-title>
+                                <v-list-item-subtitle>{{ userName }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                        </v-list-item>
+
+                        <v-list-item>
+                            <v-list-item-content>
+                                <v-list-item-title>Correo</v-list-item-title>
+                                <v-list-item-subtitle>{{ email }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                        </v-list-item>
+
+                        <v-list-item>
+                            <v-list-item-content>
+                                <v-list-item-title>Número</v-list-item-title>
+                                <v-list-item-subtitle>{{ phoneNumber }}</v-list-item-subtitle>
+                            </v-list-item-content>
+                        </v-list-item>
+                    </v-list>
                 </v-card>
+
             </v-card>
         </v-card>
     </v-container>
@@ -44,22 +73,51 @@ export default {
         };
     },
     methods: {
+
+        handleAuthAction() {
+            if (this.isAuthenticated) {
+                keycloak.logout(); // Cierra sesión
+            } else {
+                keycloak.login(); // Inicia sesión
+            }
+        },
         get_user_data() {
             if (keycloak.authenticated) {
                 const token = keycloak.tokenParsed;
 
-                // Asumiendo que las propiedades están en el token
-                const firstName = token.given_name || ''; // Nombre
-                const lastName = token.family_name || ''; // Apellido
-                this.fullName = `${firstName} ${lastName}`; // Nombre completo
+                console.log(token);
+                for (const [key, value] of Object.entries(token)) {
+                    console.log(`${key}: ${value}`);
+                }
 
-                this.userName = token.preferred_username || ''; // Nombre de usuario
-                this.email = token.email || ''; // Email
+                this.fullName = token.name;
+                this.userName = token.preferred_username || '';
+                this.email = token.email || '';
+
+                // Propiedades personalizadas
+                const phonePrefix = token.prefijo || '';
+                const phoneNumber = token.telefono || '';
+                this.phoneNumber = `${phonePrefix} ${phoneNumber}`.trim();
+
+                // Mostrar en la consola para depurar
+                console.log('Full Name:', this.fullName);
+                console.log('Username:', this.userName);
+                console.log('Email:', this.email);
+                console.log('Phone Number:', this.phoneNumber);
             }
         }
     },
     mounted() {
+        // Verificar el estado de autenticación al montar el componente
+        this.isAuthenticated = keycloak.authenticated;
+        keycloak.onAuthLogout = () => {
+            this.isAuthenticated = false;
+            this.isAdmin = false; // Restablece el rol de admin cuando se cierre sesión
+        };
         this.get_user_data();
+
+
+
     }
 };
 </script>
@@ -78,7 +136,7 @@ body {
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    width: 50%;
+    width: 70%;
 }
 
 .custom-card {
@@ -89,6 +147,12 @@ body {
     background-color: #4a9573;
     width: 100%;
     height: 200px;
+    display: flex;
+    /* Asegura que el título esté centrado */
+    align-items: center;
+    justify-content: center;
+    color: white;
+    /* Cambiar el color del texto a blanco */
 }
 
 .avatar-item {
@@ -109,9 +173,6 @@ body {
     background-color: rgba(255, 255, 255, 0.226);
 }
 
-/* Aquí puedes agregar estilos específicos para este componente */
-h1 {
-    color: #42b983;
-    /* Ejemplo de estilo */
-}
+
+
 </style>

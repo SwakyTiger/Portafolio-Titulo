@@ -17,10 +17,8 @@
           <router-link v-if="isAdmin" to="/CuadraturaMensual">Cuadratura Mensual</router-link>
           <router-link v-if="isAdmin" to="/crudPlanes">Administrador de Planes</router-link>
           <router-link v-if="isAdmin" to="/ventasReport">Administrador de Ventas</router-link>
-          <router-link to="/resumenPago">Resumen Pago Prueba</router-link>
-          <router-link to="/historyTranscriptor">Historial</router-link>
           <v-link @click="handleAuthAction" id="authButton">
-          {{ isAuthenticated ? 'Logout' : 'Login' }}
+          {{ isAuthenticated ? '' : 'Iniciar Sesión' }}
           </v-link>
           <router-link v-if="isAuthenticated" to="/miCuenta">
             <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')"
@@ -165,15 +163,7 @@ nav a {
 }
 
 #authButton {
-  color: #42b983;
-  font-family: 'Roboto', sans-serif;
-  text-transform: none;
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  text-decoration: none;
+  color: red;
 }
 
 #authButton:hover {

@@ -48,22 +48,26 @@ const routes = [
   {
     path: '/resumenPago',
     name: 'resumenPago',
-    component: resumenPago
+    component: resumenPago,
+    meta: { requiresAuth: true }
   },
   {
     path: '/pagoRealizado',
     name: 'pagoRealizado',
-    component: pagoRealizado
+    component: pagoRealizado,
+    meta: { requiresAuth: true }
   },
   {
     path: '/historyTranscriptor',
     name: 'historyTranscriptor',
-    component: historyTranscriptor
+    component: historyTranscriptor,
+    meta: { requiresAuth: true }
   },
   {
     path: '/miCuenta',
     name: 'miCuenta',
-    component: miCuenta
+    component: miCuenta,
+    meta: { requiresAuth: true }
   }
 ]
 
@@ -85,11 +89,20 @@ function checkAdminRole() {
 
 // Guardia de navegación global para proteger rutas
 router.beforeEach((to, from, next) => {
-  if (to.matched.some(record => record.meta.requiresAdmin)) {
+  // Verificar si la ruta requiere autenticación
+  if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!keycloak.authenticated) {
       console.log('No autenticado, redirigiendo al login.');
-      // keycloak.login(); // Redirigir al login si no está autenticado
-      next('/');
+      keycloak.login(); // Redirigir al login si no está autenticado
+    } else {
+      console.log('Usuario autenticado, permitiendo acceso.');
+      next(); // Permitir acceso si está autenticado
+    }
+  } else if (to.matched.some(record => record.meta.requiresAdmin)) {
+    // Verificar si la ruta requiere rol de admin
+    if (!keycloak.authenticated) {
+      console.log('No autenticado, redirigiendo al login.');
+      keycloak.login(); // Redirigir al login si no está autenticado
     } else if (!checkAdminRole()) {
       console.log('No es admin, redirigiendo a la página de inicio.');
       next('/'); // Redirigir a la página de inicio si no es admin
@@ -98,10 +111,9 @@ router.beforeEach((to, from, next) => {
       next(); // Permitir acceso si el usuario es admin
     }
   } else {
-    console.log('Ruta no requiere rol de admin, permitiendo acceso.');
-    next(); // Permitir acceso si la ruta no requiere rol de admin
+    console.log('Ruta no requiere autenticación, permitiendo acceso.');
+    next(); // Permitir acceso si la ruta no requiere autenticación
   }
 });
-
 
 export default router;
