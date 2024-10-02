@@ -1,55 +1,103 @@
 <template>
-  <v-container class="centered-container">
-    <v-card class="custom-card">
-      <v-card-title class="custom-title">
-        <h1>Historial</h1>
-      </v-card-title>
+  <v-container fluid class="pa-0">
+    <v-card flat>
+      <v-card-title class="custom-title text-h4 font-weight-bold white--text pb-4">
+                <h1>Historial</h1>
+            </v-card-title>
 
-      <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')" :title="fullName"
-        class="avatar-item"></v-list-item>
-
-      <v-card class="contenedor">
-        <v-layout permanent density="compact">
-          <v-navigation-drawer permanent>
-            <v-list density="compact" nav>
-              <v-list-item prepend-icon="mdi-view-dashboard" title="Mi Cuenta" value="home"
-                to="/miCuenta"></v-list-item>
-              <v-list-item prepend-icon="mdi-forum" title="Historial" value="about"
-                to="/historyTranscriptor"></v-list-item>
-              <v-list-item prepend-icon="mdi mdi-logout" id="authButton" @click="handleAuthAction">{{
-                isAuthenticated ? 'Cerrar Sesion' : '' }}</v-list-item>
+      <v-row no-gutters>
+        <v-col cols="12" md="3">
+          <v-card flat class="h-100">
+            <v-list>
+              <v-list-item
+                :prepend-avatar="require('@/assets/icon-account.png')"
+                :title="fullName"
+                :subtitle="email"
+              ></v-list-item>
             </v-list>
-          </v-navigation-drawer>
+            <v-divider></v-divider>
+            <v-list nav density="compact">
+              <v-list-item
+                prepend-icon="mdi-view-dashboard"
+                title="Mi Cuenta"
+                value="home"
+                to="/miCuenta"
+              ></v-list-item>
+              <v-list-item
+                prepend-icon="mdi-forum"
+                title="Historial"
+                value="about"
+                to="/historyTranscriptor"
+              ></v-list-item>
+              <v-list-item
+                prepend-icon="mdi-logout"
+                :title="isAuthenticated ? 'Cerrar Sesión' : ''"
+                @click="handleAuthAction"
+                id="authButton"
+                class="error--text"
+              ></v-list-item>
+            </v-list>
+          </v-card>
+        </v-col>
 
-          <v-main>
-            <v-card flat>
-              <v-container class="filtros">
-                <v-container class="search">
-                  <v-text-field id="search" v-model="search" label="Search" prepend-inner-icon="mdi-magnify"
-                    variant="outlined" hide-details single-line></v-text-field>
-                </v-container>
-                <v-container class="filtroFecha">
-                  <v-select v-model="selectedYear" :items="years" label="Año" outlined></v-select>
-                  <v-select v-model="selectedMonth" :items="months" label="Mes" outlined></v-select>
-                </v-container>
-              </v-container>
-              <v-data-table :headers="headers" :items="filteredDesserts" :search="search"></v-data-table>
-            </v-card>
-          </v-main>
-        </v-layout>
-      </v-card>
+        <v-col cols="12" md="9">
+          <v-card flat class="pa-6">
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  v-model="search"
+                  label="Buscar"
+                  prepend-inner-icon="mdi-magnify"
+                  outlined
+                  dense
+                  hide-details
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="3">
+                <v-select
+                  v-model="selectedYear"
+                  :items="years"
+                  label="Año"
+                  outlined
+                  dense
+                  hide-details
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="3">
+                <v-select
+                  v-model="selectedMonth"
+                  :items="months"
+                  label="Mes"
+                  outlined
+                  dense
+                  hide-details
+                ></v-select>
+              </v-col>
+            </v-row>
+
+            <v-data-table
+              :headers="headers"
+              :items="filteredDesserts"
+              :search="search"
+              :items-per-page="10"
+              class="mt-4"
+            >
+            </v-data-table>
+          </v-card>
+        </v-col>
+      </v-row>
     </v-card>
   </v-container>
 </template>
 
-
 <script>
-import keycloak from "@/keycloak"; // Importa tu instancia de Keycloak
+import keycloak from "@/keycloak";
 
 export default {
+  name: 'HistorialTranscriptor',
   data() {
     const currentYear = new Date().getFullYear();
-    const startYear = 2023;  // Puedes cambiarlo al año en el que comienzas a almacenar datos
+    const startYear = 2023;
 
     const years = [{ title: 'Todos los años', value: null }];
     for (let year = startYear; year <= currentYear; year++) {
@@ -58,6 +106,7 @@ export default {
 
     return {
       fullName: '',
+      email: '',
       search: '',
       selectedYear: null,
       selectedMonth: null,
@@ -71,11 +120,10 @@ export default {
         {
           align: 'start',
           key: 'fecha',
-          sortable: false,
+          sortable: true,
           title: 'Fecha/Hora',
         },
       ],
-
       desserts: [
         {
           data_transcrito: 'Hola, oye, no voy a poder llegar a la reunión a las 10. ¿Podemos moverla para las 11? Avísame si te sirve, porfa.',
@@ -162,7 +210,7 @@ export default {
           fecha: '2022-01-15',
         },
       ],
-      years: years,  // Lista de años con opción de "sin filtro"
+      years: years,
       months: [
         { title: 'Todos los meses', value: null },
         { title: 'Enero', value: 1 },
@@ -178,79 +226,65 @@ export default {
         { title: 'Noviembre', value: 11 },
         { title: 'Diciembre', value: 12 }
       ],
+      isAuthenticated: false,
     }
   },
   methods: {
     handleAuthAction() {
-            if (this.isAuthenticated) {
-              keycloak.logout({
-                    redirectUri: window.location.origin 
-                });
-            } else {
-                keycloak.login();
-            }
-        },
+      if (this.isAuthenticated) {
+        keycloak.logout({
+          redirectUri: window.location.origin 
+        });
+      } else {
+        keycloak.login();
+      }
+    },
     get_user_data() {
       if (keycloak.authenticated) {
         const token = keycloak.tokenParsed;
-
-        console.log(token);
-        for (const [key, value] of Object.entries(token)) {
-          console.log(`${key}: ${value}`);
-        }
-
-        this.fullName = token.name || ""; // Guardar el nombre de usuario
+        this.fullName = token.name || "";
+        this.email = token.email || "";
       }
+    },
+    formatDate(dateString) {
+      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      return new Date(dateString).toLocaleDateString('es-ES', options);
     },
   },
   computed: {
     filteredDesserts() {
       return this.desserts.filter(item => {
-        // Filtrar por palabra clave
         const matchesSearch = item.data_transcrito.toLowerCase().includes(this.search.toLowerCase());
-
-        // Filtrar por año y mes
         const itemDate = new Date(item.fecha);
         const matchesYear = this.selectedYear ? itemDate.getFullYear() === this.selectedYear : true;
         const matchesMonth = this.selectedMonth ? itemDate.getMonth() + 1 === this.selectedMonth : true;
-
         return matchesSearch && matchesYear && matchesMonth;
       });
     }
   },
   mounted() {
-    // Verificar el estado de autenticación al montar el componente
     this.isAuthenticated = keycloak.authenticated;
-        keycloak.onAuthLogout = () => {
-            this.isAuthenticated = false;
-            this.isAdmin = false; // Restablece el rol de admin cuando se cierre sesión
-        };
+    keycloak.onAuthLogout = () => {
+      this.isAuthenticated = false;
+    };
     this.get_user_data();
   },
 }
 </script>
 
-
-
 <style scoped>
-html,
-body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  /* Oculta el desbordamiento horizontal en toda la página */
+.v-card {
+  border-radius: 8px;
 }
-
-.centered-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 70%;
+.v-list-item--active {
+  background-color: #e6f7f0;
 }
-
-.custom-card {
-  width: 100%;
+#authButton {
+  font-size: 14px;
+  color: #ff5252;
+}
+.v-data-table {
+  background-color: white;
 }
 
 .custom-title {
@@ -262,45 +296,5 @@ body {
   align-items: center;
   justify-content: center;
   color: white;
-  /* Cambiar el color del texto a blanco */
-}
-
-.avatar-item {
-  background-color: #ffffff;
-  width: 20%;
-  padding: 2px;
-}
-
-.contenedor {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  height: auto;
-}
-
-.info {
-  width: 100%;
-  margin: 10px;
-  background-color: rgba(255, 255, 255, 0.226);
-  height: auto;
-}
-
-.filtros {
-  display: flex;
-  flex-direction: row;
-}
-
-.search {
-  width: 100%;
-}
-
-.filtroFecha {
-  display: flex;
-  width: 50%;
-}
-
-#authButton {
-    font-size: 14px;
-    color: red;
 }
 </style>

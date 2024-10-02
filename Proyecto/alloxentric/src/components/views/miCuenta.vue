@@ -1,87 +1,85 @@
 <template>
-    <v-container class="centered-container">
-        <v-card class="custom-card">
-            <v-card-title class="custom-title">
+    <v-container fluid class="pa-0">
+        <v-card flat>
+            <v-card-title class="custom-title text-h4 font-weight-bold white--text pb-4">
                 <h1>Mi Cuenta</h1>
             </v-card-title>
-            <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')" :title="fullName"
-                class="avatar-item"></v-list-item>
 
-            <v-card class="contenedor">
-                <v-layout permanent density="compact">
-                    <v-navigation-drawer permanent>
-                        <v-list density="compact" nav>
+            <v-row no-gutters>
+                <v-col cols="12" md="3">
+                    <v-card flat class="h-100">
+                        <v-list>
+                            <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')"
+                                :title="fullName" :subtitle="email" class="avatar-item">
+                            </v-list-item>
+                        </v-list>
+                        <v-divider></v-divider>
+                        <v-list nav density="compact">
                             <v-list-item prepend-icon="mdi-view-dashboard" title="Mi Cuenta" value="home"
                                 to="/miCuenta"></v-list-item>
                             <v-list-item prepend-icon="mdi-forum" title="Historial" value="about"
                                 to="/historyTranscriptor"></v-list-item>
-                            <v-list-item prepend-icon="mdi mdi-logout" id="authButton" @click="handleAuthAction"
-                                to="/">{{
-                                    isAuthenticated ? 'Cerrar Sesion' : '' }}</v-list-item>
+                            <v-list-item prepend-icon="mdi-logout" :title="isAuthenticated ? 'Cerrar Sesión' : ''"
+                                @click="handleAuthAction" to="/" id="authButton" class="error--text"></v-list-item>
+                        </v-list>
+                    </v-card>
+                </v-col>
+
+                <v-col cols="12" md="9">
+                    <v-card flat class="pa-6">
+                        <v-list>
+                            <v-list-item>
+                                <v-list-item-title class="text-h6">Nombre</v-list-item-title>
+                                <v-list-item-subtitle>{{ fullName }}</v-list-item-subtitle>
+                            </v-list-item>
+
+                            <v-list-item>
+                                <v-list-item-title class="text-h6">Nombre de Usuario</v-list-item-title>
+                                <v-list-item-subtitle>{{ userName }}</v-list-item-subtitle>
+                            </v-list-item>
+
+                            <v-list-item>
+                                <v-list-item-title class="text-h6">Correo</v-list-item-title>
+                                <v-list-item-subtitle>{{ email }}</v-list-item-subtitle>
+                            </v-list-item>
+
+                            <v-list-item>
+                                <v-list-item-title class="text-h6">Número</v-list-item-title>
+                                <v-list-item-subtitle>{{ phoneNumber }}</v-list-item-subtitle>
+                            </v-list-item>
                         </v-list>
 
-                    </v-navigation-drawer>
-                    <v-main style="height: 250px"></v-main>
-                </v-layout>
-                <v-card class="info">
-                    <v-list>
-                        <v-list-item>
-                            <v-list-item-content>
-                                <v-list-item-title>Nombre</v-list-item-title>
-                                <v-list-item-subtitle>{{ fullName }}</v-list-item-subtitle>
-                            </v-list-item-content>
-                        </v-list-item>
+                        <v-btn x-large color="#42b983" dark class="mt-8"
+                            :href="`http://localhost:8081/realms/Transcriptor/account/`" target="_blank">
+                            Editar
+                        </v-btn>
 
-                        <v-list-item>
-                            <v-list-item-content>
-                                <v-list-item-title>Nombre de Usuario</v-list-item-title>
-                                <v-list-item-subtitle>{{ userName }}</v-list-item-subtitle>
-                            </v-list-item-content>
-                        </v-list-item>
-
-                        <v-list-item>
-                            <v-list-item-content>
-                                <v-list-item-title>Correo</v-list-item-title>
-                                <v-list-item-subtitle>{{ email }}</v-list-item-subtitle>
-                            </v-list-item-content>
-                        </v-list-item>
-
-                        <v-list-item>
-                            <v-list-item-content>
-                                <v-list-item-title>Número</v-list-item-title>
-                                <v-list-item-subtitle>{{ phoneNumber }}</v-list-item-subtitle>
-                            </v-list-item-content>
-                        </v-list-item>
-                        <v-list-item>
-                            <v-btn x-large color="#42b983" dark class="mt-8" to="/editarInfoUser">Editar</v-btn>
-                        </v-list-item>
-                    </v-list>
-                </v-card>
-
-            </v-card>
+                    </v-card>
+                </v-col>
+            </v-row>
         </v-card>
     </v-container>
 </template>
 
 <script>
-import keycloak from '@/keycloak'; // Importa tu instancia de Keycloak
+import keycloak from '@/keycloak';
 
 export default {
-    name: 'miCuenta',
+    name: 'MiCuenta',
     data() {
         return {
             fullName: '',
             userName: '',
             email: '',
-            phoneNumber: ''
+            phoneNumber: '',
+            isAuthenticated: false,
         };
     },
     methods: {
-
         handleAuthAction() {
             if (this.isAuthenticated) {
                 keycloak.logout({
-                    redirectUri: window.location.origin 
+                    redirectUri: window.location.origin
                 });
             } else {
                 keycloak.login();
@@ -121,32 +119,36 @@ export default {
             this.isAdmin = false; // Restablece el rol de admin cuando se cierre sesión
         };
         this.get_user_data();
-
-
-
     }
 };
 </script>
 
 <style scoped>
-html,
-body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-    /* Oculta el desbordamiento horizontal en toda la página */
+.v-card {
+    border-radius: 8px;
 }
 
-.centered-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    width: 70%;
+.v-list-item--active {
+    background-color: #e6f7f0;
 }
 
-.custom-card {
-    width: 100%;
+#authButton {
+    font-size: 14px;
+    color: #ff5252;
+}
+
+.v-img {
+    background-color: #1ebea4;
+}
+
+.v-list-item-title {
+    font-weight: bold;
+    color: #42b983;
+}
+
+.v-list-item-subtitle {
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: bold;
 }
 
 .custom-title {
@@ -158,29 +160,5 @@ body {
     align-items: center;
     justify-content: center;
     color: white;
-    /* Cambiar el color del texto a blanco */
-}
-
-.avatar-item {
-    background-color: #ffffff;
-    width: 20%;
-    padding: 2px;
-}
-
-.contenedor {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-}
-
-.info {
-    width: 100%;
-    margin: 10px;
-    background-color: rgba(255, 255, 255, 0.226);
-}
-
-#authButton {
-    font-size: 14px;
-    color: red;
 }
 </style>

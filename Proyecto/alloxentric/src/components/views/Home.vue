@@ -81,23 +81,6 @@ export default {
                     title: 'Privacidad Garantizada',
                     description: 'Tu seguridad es nuestra prioridad. Todos los datos se procesan con encriptación de extremo a extremo.'
                 }
-            ],
-            plans: [
-                {
-                    name: 'Básico',
-                    price: '9.99',
-                    features: ['100 transcripciones/mes', 'Soporte por email']
-                },
-                {
-                    name: 'Pro',
-                    price: '19.99',
-                    features: ['500 transcripciones/mes', 'Soporte prioritario', 'Análisis de sentimientos']
-                },
-                {
-                    name: 'Empresas',
-                    price: '49.99',
-                    features: ['Transcripciones ilimitadas', 'Soporte 24/7', 'API personalizada']
-                }
             ]
         }
     },
