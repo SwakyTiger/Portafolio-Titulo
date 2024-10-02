@@ -24,7 +24,7 @@
           <v-spacer></v-spacer>
           
           <v-card-actions class="justify-center pb-4">
-            <v-btn variant="elevated" color="black" @click="realizarPago(plan)">CONTRATAR</v-btn>
+            <v-btn variant="elevated" color="#42b983" @click="realizarPago(plan)">CONTRATAR</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -34,6 +34,10 @@
 
 <script>
 import axios from 'axios';
+import keycloak from '@/keycloak';
+
+// Asume que 'keycloak' es un objeto global configurado en tu aplicación
+// Asegúrate de que keycloak se haya autenticado antes de intentar obtener los datos
 
 export default {
   data() {
@@ -45,6 +49,7 @@ export default {
     this.fetchPlans();
   },
   methods: {
+    // Método para obtener la lista de planes desde el backend
     async fetchPlans() {
       try {
         const response = await axios.get('http://localhost:8000/plans');
@@ -53,39 +58,57 @@ export default {
         console.error("Error fetching plans:", error);
       }
     },
+
+    // Método para realizar el pago usando el plan seleccionado
     async realizarPago(plan) {
-    try {
-      const response = await axios.post('http://localhost:8000/create-checkout-session', {
-        plan_name: plan.nombre,
-        price: plan.precio,
-        user_email: "usuario@example.com"
-      });
-      console.log(response.data)
-      // Verifica que la URL no esté indefinida
-      if (response.data.url) {
-        window.location.href = response.data.url;
-      } else {
-        console.error("URL de Stripe no recibida:", response.data);
+      try {
+        // Verificar si keycloak está autenticado
+        if (keycloak.authenticated) {
+          // Extraer nombre completo del token
+          const firstName = keycloak.tokenParsed?.given_name || '';  // Usar el campo given_name si existe
+          const lastName = keycloak.tokenParsed?.family_name || '';  // Usar el campo family_name si existe
+          const fullName = `${firstName} ${lastName}`.trim();  // Formatear el nombre completo
+
+          // Realizar la solicitud al backend con el nombre del usuario
+          const response = await axios.post('http://localhost:8000/create-checkout-session', {
+            plan_name: plan.nombre,
+            price: plan.precio,
+            user_email: keycloak.tokenParsed.email,  // Obtener el email desde el token
+            user_name: fullName  // Incluir el nombre completo del usuario
+          });
+
+          // Verifica que la URL de Stripe esté presente en la respuesta
+          if (response.data.url) {
+            window.location.href = response.data.url;
+          } else {
+            console.error("URL de Stripe no recibida:", response.data);
+          }
+        } else {
+          console.error("El usuario no está autenticado");
+        }
+      } catch (error) {
+        console.error("Error al iniciar el pago:", error);
       }
-    } catch (error) {
-      console.error("Error al iniciar el pago:", error);
     }
-  }
   }
 }
 </script>
+
 
 <style scoped>
 .planesyprecios {
   padding: 100px;
   width: 100%;
-  background-color: #f5f5f5;
+  background-color: #1ebea4;
+  color: white;
   text-align: center;
   font-size: 5rem
 }
 .transcriptor{
+  font-size: 50px;
   padding: 60px;
   text-align: center;
+  color: #42b983;
 }
 .v-card{
   height: 100%;
@@ -95,7 +118,7 @@ export default {
   padding: 50px;
 }
 .custom-border {
-  border-color: #00FFF0 !important;
+  border-color: #1ebea4 !important;
 }
 
 .plan-container {

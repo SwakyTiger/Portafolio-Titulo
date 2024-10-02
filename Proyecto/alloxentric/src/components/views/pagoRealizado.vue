@@ -1,6 +1,7 @@
 <template>
+  <h1 class="pagoRealizado">¡Pago Realizado Correctamente!</h1>
+  
   <v-container class="text-center pt-12">
-    <h1 class="pagoRealizado">¡Pago Realizado Correctamente!</h1>
     <v-card outlined class="mx-auto mt-6" max-width="600px" elevation="2">
       <v-card-text>
         <h2 class="text-h5 mb-4">Datos de Facturación</h2>
@@ -14,20 +15,20 @@
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title>Tipo de Plan</v-list-item-title>
-              <v-list-item-subtitle>{{ planName }}</v-list-item-subtitle>
+              <v-list-item-title class="text-h6 font-weight-bold">Tipo de Plan</v-list-item-title>
+              <v-list-item-subtitle class="text-h6 font-weight-bold">{{ planName }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title>Nombre del Usuario</v-list-item-title>
-              <v-list-item-subtitle>{{ userName }}</v-list-item-subtitle>
+              <v-list-item-title class="text-h6 font-weight-bold">Nombre del Usuario</v-list-item-title>
+              <v-list-item-subtitle class="text-h6 font-weight-bold">{{ userName }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title>Correo</v-list-item-title>
-              <v-list-item-subtitle>{{ userEmail }}</v-list-item-subtitle>
+              <v-list-item-title class="text-h6 font-weight-bold">Correo</v-list-item-title>
+              <v-list-item-subtitle class="text-h6 font-weight-bold">{{ userEmail }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
         </v-list>
@@ -41,6 +42,9 @@
 </template>
 
 <script>
+import keycloak from '@/keycloak';
+
+
 export default {
   data() {
     return {
@@ -53,40 +57,83 @@ export default {
     };
   },
   async created() {
+    // Obtener el parámetro session_id de la URL
     const queryParams = new URLSearchParams(window.location.search);
     const sessionId = queryParams.get('session_id');
-
+   
+    // Verificar que session_id esté presente
     if (sessionId) {
-      try {
-        console.log("Session ID:", sessionId); // Log the session ID
-        const response = await fetch(`http://localhost:8000/payment-details?session_id=${sessionId}`);
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-        }
-        const data = await response.json();
-        console.log("Received data:", data); // Log the received data
-        this.planName = data.planName || 'No disponible';
-        this.price = data.price ? data.price.toFixed(2) : 'No disponible';
-        this.userName = data.userName || 'No disponible';
-        this.userEmail = data.userEmail || 'No disponible';
-        this.dataLoaded = true;
-      } catch (error) {
+      if(keycloak.authenticated){
+        // Extraer nombre completo del token
+        const firstName = keycloak.tokenParsed?.given_name || '';  // Usar el campo given_name si existe
+        const lastName = keycloak.tokenParsed?.family_name || '';  // Usar el campo family_name si existe
+        const fullName = `${firstName} ${lastName}`.trim();  // Formatear el nombre completo
+        try {
+          console.log("Session ID:", sessionId); // Log para depuración
+          
+          const response = await fetch(`http://localhost:8000/payment-details?session_id=${sessionId}`);
+          
+          // Verificar que la respuesta esté bien
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+          }
+
+          // Procesar la respuesta JSON
+          const data = await response.json();
+          console.log("Received data:", data); // Log de los datos recibidos para depuración
+
+          // Asignar los valores al estado local del componente
+          this.planName = data.planName || 'No disponible';
+          this.price = data.price ? data.price.toFixed(2) : 'No disponible';
+          this.userName = fullName || 'No disponible';  // Mostrar nombre de usuario
+          this.userEmail = data.userEmail || 'No disponible';
+          this.dataLoaded = true;
+          // Registrar la venta en la base de datos
+          await this.recordSale(sessionId); // Llama al endpoint para registrar la venta
+        } catch (error) {
         console.error("Error:", error);
         this.error = `Error al cargar los datos: ${error.message}`;
+        }
       }
     } else {
       this.error = "No se encontró ID de sesión en la URL";
     }
   }
-}
+  ,
+  methods: {
+    async recordSale(sessionId) {
+      const token = keycloak.token; // Obtén el token de Keycloak
+      try {
+        // Enviar `session_id` como parámetro de consulta en la URL
+        const response = await fetch(`http://localhost:8000/record-sale?session_id=${sessionId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        console.log("Venta registrada exitosamente.");
+      } catch (error) {
+        console.error("Error al registrar la venta:", error);
+      }
+    }
+}}
+
 </script>
 
 <style scoped>
 .pagoRealizado {
-  padding: 20px;
+  padding: 100px;
   width: 100%;
-  background-color: #f5f5f5;
+  background-color: #1ebea4;
+  color: white;
   text-align: center;
   font-size: 2.5rem;
 }

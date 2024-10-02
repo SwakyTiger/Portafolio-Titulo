@@ -15,6 +15,7 @@ class Venta(BaseModel):
     id_usuario: int
     id_plan: int
     fecha_venta: datetime
+    total_pagado: int
 
 class Usuario(BaseModel):
     id_usuario: Optional[int]
@@ -29,3 +30,4 @@ class CreateCheckoutSession(BaseModel):
     price: int
     plan_name: str
     user_email: str
+    user_name: str
