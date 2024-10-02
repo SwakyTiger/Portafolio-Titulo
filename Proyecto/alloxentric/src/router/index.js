@@ -9,9 +9,16 @@ import resumenPago from '@/components/views/resumenPago.vue'
 import pagoRealizado from '@/components/views/pagoRealizado.vue'
 import historyTranscriptor from '@/components/views/historyTranscriptor.vue'
 import miCuenta from '@/components/views/miCuenta.vue'
+import home from '@/components/views/Home.vue'
+import editarInfoUser from '@/components/views/editarInfoUser.vue'
 import keycloak from '@/keycloak';
 
 const routes = [
+  {
+    path: '/',
+    name: 'home',
+    component: home
+  },
   {
     path: '/planDetails',
     name: 'planDetails',
@@ -68,6 +75,11 @@ const routes = [
     name: 'miCuenta',
     component: miCuenta,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/editarInfoUser',
+    name: 'editarInfoUser',
+    component: editarInfoUser
   }
 ]
 

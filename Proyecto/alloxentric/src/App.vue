@@ -1,8 +1,8 @@
 <template>
   <v-app id="app" class="d-flex flex-column min-vh-100">
-    <v-app-bar app>
-      <v-container class="d-flex align-center justify-space-between">
-        <router-link to="/" class="d-flex align-center">
+    <v-app-bar app color="#ffffff" dark>
+      <v-container class="d-flex align-center">
+        <router-link to="/" class="d-flex align-center" style="text-decoration: none;"> 
           <img
             :src="require('@/assets/alloxentric_logo_only.png')"
             alt="Alloxentric Logo"
@@ -10,26 +10,27 @@
           />
         </router-link>
         
+        <v-spacer></v-spacer>
+
         <nav class="d-none d-md-flex align-center">
-          <router-link to="/">Inicio</router-link>
-          <router-link to="/planDetails">Planes</router-link>
-          <router-link to="/RegistroUsuario">Registrarse</router-link>
-          <router-link v-if="isAdmin" to="/CuadraturaMensual">Cuadratura Mensual</router-link>
-          <router-link v-if="isAdmin" to="/crudPlanes">Administrador de Planes</router-link>
-          <router-link v-if="isAdmin" to="/ventasReport">Administrador de Ventas</router-link>
-          <v-link @click="handleAuthAction" id="authButton">
-          {{ isAuthenticated ? '' : 'Iniciar Sesión' }}
-          </v-link>
-          <router-link v-if="isAuthenticated" to="/miCuenta">
+          <v-btn text to="/" color="#42b983">Inicio</v-btn>
+          <v-btn text to="/planDetails" color="#42b983">Planes</v-btn>
+          <v-btn v-if="!isAuthenticated" text to="/RegistroUsuario" color="#42b983">Registrarse</v-btn>
+          <v-btn v-if="isAdmin" text to="/CuadraturaMensual" color="#42b983">Cuadratura Mensual</v-btn>
+          <v-btn v-if="isAdmin" text to="/crudPlanes" color="#42b983">Administrador de Planes</v-btn>
+          <v-btn v-if="isAdmin" text to="/ventasReport" color="#42b983">Administrador de Ventas</v-btn>
+          <v-btn v-if="!isAuthenticated" text @click="handleAuthAction" id="authButton" color="#42b983">
+           Iniciar Sesión
+          </v-btn>
+          <v-btn v-if="isAuthenticated" text to="/miCuenta" class="d-flex align-center">
             <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')"
               subtitle="Bienvenido"
               :title="userName"
+              class="custom-title"
               ></v-list-item>
-          </router-link>
+          </v-btn>
         </nav>
 
-
-        <!-- Menú -->
         <v-app-bar-nav-icon @click="drawer = !drawer" class="d-md-none"></v-app-bar-nav-icon>
       </v-container>
     </v-app-bar>
@@ -37,25 +38,33 @@
     <!-- Drawer para el menú desplegable -->
     <v-navigation-drawer v-model="drawer" app temporary>
       <v-list>
-        <v-list-item>
-          <router-link to="/">Inicio</router-link>
+        <v-list-item to="/" link>
+          <v-list-item-title>Inicio</v-list-item-title>
         </v-list-item>
-        <v-list-item>
-          <router-link to="/planDetails">Planes</router-link>
+        <v-list-item to="/planDetails" link>
+          <v-list-item-title>Planes</v-list-item-title>
         </v-list-item>
-        <v-list-item>
-          <router-link to="/RegistroUsuario">Registrarse</router-link>
+        <v-list-item to="/RegistroUsuario" link>
+          <v-list-item-title>Registrarse</v-list-item-title>
         </v-list-item>
-        <v-list-item>
-          <router-link to="/CuadraturaMensual">Cuadratura Mensual</router-link>
+        <v-list-item v-if="isAdmin" to="/CuadraturaMensual" link>
+          <v-list-item-title>Cuadratura Mensual</v-list-item-title>
         </v-list-item>
-        <v-list-item>
-          <router-link to="/crudPlanes">Administrador de Planes</router-link>
+        <v-list-item v-if="isAdmin" to="/crudPlanes" link>
+          <v-list-item-title>Administrador de Planes</v-list-item-title>
         </v-list-item>
-        <v-list-item>
-          <v-link @click="handleAuthAction" id="authButton">
-          {{ isAuthenticated ? 'Logout' : 'Login' }}
-          </v-link>
+        <v-list-item v-if="isAdmin" to="/ventasReport" link>
+          <v-list-item-title>Administrador de Ventas</v-list-item-title>
+        </v-list-item>
+        <v-list-item @click="handleAuthAction" link>
+          <v-list-item-title>{{ isAuthenticated ? '' : 'Iniciar Sesión' }}</v-list-item-title>
+        </v-list-item>
+        <v-list-item v-if="isAuthenticated" to="/miCuenta" link>
+          <v-list-item-avatar>
+            <v-img :src="require('@/assets/icon-account.png')" alt="User Avatar"></v-img>
+          </v-list-item-avatar>
+          <v-list-item-title>{{ userName }}</v-list-item-title>
+          <v-list-item-subtitle>Bienvenido</v-list-item-subtitle>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -64,7 +73,7 @@
     <v-main class="flex-grow-1">
       <router-view />
     </v-main>
-
+    
     <!-- Footer -->
     <MainFooter />
   </v-app>
@@ -101,6 +110,8 @@ export default {
 
         // Verifica si el usuario tiene el rol 'admin' en el cliente 'transcriptor_alloxentric'
         const clientRoles = token.resource_access?.['transcriptor_alloxentric']?.roles || [];
+
+        console.log('Sesión cerrada')
         this.isAdmin = clientRoles.includes('admin');
       }
     },
@@ -116,7 +127,7 @@ export default {
       }
       return ''; // Retorna vacío si no está autenticado
     }
-  },
+  },  
   mounted() {
     // Verificar el estado de autenticación al montar el componente
     this.isAuthenticated = keycloak.authenticated;
@@ -138,35 +149,24 @@ export default {
 </script>
 
 <style>
+.v-application {
+  background-color: white !important;
+}
 .custom-logo {
-  width: 50px;
-}
-
-#app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-nav {
-  background-color: #ffffff;
-}
-
-nav a {
-  margin-right: 15px;
-  text-decoration: none;
-  color: #42b983;
+  height: 40px;
+  width: auto;
 }
 
 .v-main {
   flex: 1;
 }
 
-#authButton {
-  color: red;
+nav v-btn  {
+  color: #42b983;
 }
 
-#authButton:hover {
-  background: none;
+.custom-title {
+  color: #256649;
 }
+
 </style>

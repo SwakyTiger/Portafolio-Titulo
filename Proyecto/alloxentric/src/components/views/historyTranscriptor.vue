@@ -183,9 +183,11 @@ export default {
   methods: {
     handleAuthAction() {
             if (this.isAuthenticated) {
-                keycloak.logout(); // Cierra sesión
+              keycloak.logout({
+                    redirectUri: window.location.origin 
+                });
             } else {
-                keycloak.login(); // Inicia sesión
+                keycloak.login();
             }
         },
     get_user_data() {
@@ -252,7 +254,7 @@ body {
 }
 
 .custom-title {
-  background-color: #4a9573;
+  background-color: #1ebea4;
   width: 100%;
   height: 200px;
   display: flex;
@@ -295,5 +297,10 @@ body {
 .filtroFecha {
   display: flex;
   width: 50%;
+}
+
+#authButton {
+    font-size: 14px;
+    color: red;
 }
 </style>
