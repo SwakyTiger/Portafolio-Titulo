@@ -146,7 +146,7 @@ async def record_sale(session_id: str, request: Request):
             "id_plan": id_plan if id_plan else 0,  # id_plan ahora tendrá el valor correcto
             "fecha_venta": datetime.utcnow(),
             "total_pagado": session.amount_total if session.amount_total else 0,  # Asegúrate de que el total esté correcto
-            "session_id": session_id  # Agrega session_id para referencia
+            #"session_id": session_id  # Agrega session_id para referencia
         }
         logging.info(f"Datos de venta a insertar: {venta}")
 

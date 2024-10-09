@@ -1,5 +1,8 @@
 <template>
   <h1 class="planesyprecios">Planes Y Precios</h1>
+  <v-alert v-if="showAlert" type="error" dismissible @click="showAlert = false">
+      El usuario no está autenticado. Por favor, inicia sesión para continuar.
+  </v-alert>
   <v-container>
     <h2 class="transcriptor">Transcriptor Whatsapp</h2>
     <v-row>
@@ -42,6 +45,7 @@ import keycloak from '@/keycloak';
 export default {
   data() {
     return {
+      showAlert: false, // Variable para mostrar/ocultar la alerta
       plans: []
     }
   },
@@ -49,48 +53,58 @@ export default {
     this.fetchPlans();
   },
   methods: {
-    // Método para obtener la lista de planes desde el backend
-    async fetchPlans() {
-      try {
-        const response = await axios.get('http://localhost:8000/plans');
-        this.plans = response.data;
-      } catch (error) {
-        console.error("Error fetching plans:", error);
-      }
-    },
+  // Método para obtener la lista de planes desde el backend
+  async fetchPlans() {
+    try {
+      const response = await axios.get('http://localhost:8000/plans');
+      this.plans = response.data;
+    } catch (error) {
+      console.error("Error fetching plans:", error);
+    }
+  },
 
-    // Método para realizar el pago usando el plan seleccionado
-    async realizarPago(plan) {
-      try {
-        // Verificar si keycloak está autenticado
-        if (keycloak.authenticated) {
-          // Extraer nombre completo del token
-          const firstName = keycloak.tokenParsed?.given_name || '';  // Usar el campo given_name si existe
-          const lastName = keycloak.tokenParsed?.family_name || '';  // Usar el campo family_name si existe
-          const fullName = `${firstName} ${lastName}`.trim();  // Formatear el nombre completo
+  // Método para redirigir al resumen de pago
+  async realizarPago(plan) {
+    try {
+      // Verificar si keycloak está autenticado
+      if (keycloak.authenticated) {
+        // Extraer información del usuario desde el token de Keycloak
+        const firstName = keycloak.tokenParsed?.given_name || '';
+        const lastName = keycloak.tokenParsed?.family_name || '';
+        const fullName = `${firstName} ${lastName}`.trim();
+        const emailUser = keycloak.tokenParsed?.email || '';
+        const phonePrefix = keycloak.tokenParsed?.prefijo || '';
+        const phoneNumber = keycloak.tokenParsed?.telefono || '';
 
-          // Realizar la solicitud al backend con el nombre del usuario
-          const response = await axios.post('http://localhost:8000/create-checkout-session', {
-            plan_name: plan.nombre,
-            price: plan.precio,
-            user_email: keycloak.tokenParsed.email,  // Obtener el email desde el token
-            user_name: fullName  // Incluir el nombre completo del usuario
-          });
-
-          // Verifica que la URL de Stripe esté presente en la respuesta
-          if (response.data.url) {
-            window.location.href = response.data.url;
-          } else {
-            console.error("URL de Stripe no recibida:", response.data);
+        // Construir un objeto que contenga los datos del plan y del usuario
+        const resumenData = {
+          plan: {
+            nombre: plan.nombre,
+            precio: plan.precio
+          },
+          usuario: {
+            nombre: fullName,
+            email: emailUser,
+            telefono: phoneNumber,
+            prefijo: phonePrefix
           }
-        } else {
-          console.error("El usuario no está autenticado");
-        }
-      } catch (error) {
-        console.error("Error al iniciar el pago:", error);
+        };
+
+        // Almacenar el objeto en localStorage
+        localStorage.setItem('resumenPago', JSON.stringify(resumenData));
+
+        // Redirigir a la vista de ResumenPago
+        this.$router.push({ name: 'resumenPago' });
+      } else {
+        console.error("El usuario no está autenticado");
+        this.showAlert = true;
       }
+    } catch (error) {
+      console.error("Error al redirigir al resumen de pago:", error);
     }
   }
+}
+
 }
 </script>
 
