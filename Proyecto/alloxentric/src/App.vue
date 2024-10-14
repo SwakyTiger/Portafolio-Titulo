@@ -2,32 +2,25 @@
   <v-app id="app" class="d-flex flex-column min-vh-100">
     <v-app-bar app color="#ffffff" dark>
       <v-container class="d-flex align-center">
-        <router-link to="/" class="d-flex align-center" style="text-decoration: none;"> 
-          <img
-            :src="require('@/assets/alloxentric_logo_only.png')"
-            alt="Alloxentric Logo"
-            class="custom-logo"
-          />
+        <router-link to="/" class="d-flex align-center" style="text-decoration: none;">
+          <img :src="require('@/assets/alloxentric_logo_only.png')" alt="Alloxentric Logo" class="custom-logo" />
         </router-link>
-        
+
         <v-spacer></v-spacer>
 
         <nav class="d-none d-md-flex align-center">
           <v-btn text to="/" color="#42b983">Inicio</v-btn>
           <v-btn text to="/planDetails" color="#42b983">Planes</v-btn>
-          <v-btn v-if="!isAuthenticated" text to="/RegistroUsuario" color="#42b983">Registrarse</v-btn>
+          <v-btn v-if="!isAuthenticated" text href="http://localhost:8081/realms/Transcriptor/login-actions/registration?client_id=transcriptor_alloxentric&tab_id=1Ss6hqcO4j8&client_data=eyJydSI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC8iLCJydCI6ImNvZGUiLCJybSI6ImZyYWdtZW50Iiwic3QiOiIyNzlmZWQ3Ny0yMGIyLTRhMmYtYjk1NS1hYmY5MGExYTQ4NDUifQ" color="#42b983">Registrarse</v-btn>
           <v-btn v-if="isAdmin" text to="/CuadraturaMensual" color="#42b983">Cuadratura Mensual</v-btn>
           <v-btn v-if="isAdmin" text to="/crudPlanes" color="#42b983">Administrador de Planes</v-btn>
           <v-btn v-if="isAdmin" text to="/ventasReport" color="#42b983">Administrador de Ventas</v-btn>
           <v-btn v-if="!isAuthenticated" text @click="handleAuthAction" id="authButton" color="#42b983">
-           Iniciar Sesión
+            Iniciar Sesión
           </v-btn>
           <v-btn v-if="isAuthenticated" text to="/miCuenta" class="d-flex align-center">
-            <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')"
-              subtitle="Bienvenido"
-              :title="userName"
-              class="custom-title"
-              ></v-list-item>
+            <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')" subtitle="Bienvenido"
+              :title="userName" class="custom-title"></v-list-item>
           </v-btn>
         </nav>
 
@@ -73,7 +66,7 @@
     <v-main class="flex-grow-1">
       <router-view />
     </v-main>
-    
+
     <!-- Footer -->
     <MainFooter />
   </v-app>
@@ -98,9 +91,13 @@ export default {
   methods: {
     handleAuthAction() {
       if (this.isAuthenticated) {
-        keycloak.logout(); // Cierra sesión
+        keycloak.logout({
+          redirectUri: `${window.location.origin}/`
+        });
       } else {
-        keycloak.login(); // Inicia sesión
+        keycloak.login({
+          redirectUri: `${window.location.origin}/`
+        });
       }
     },
     checkUserRole() {
@@ -127,7 +124,7 @@ export default {
       }
       return ''; // Retorna vacío si no está autenticado
     }
-  },  
+  },
   mounted() {
     // Verificar el estado de autenticación al montar el componente
     this.isAuthenticated = keycloak.authenticated;
@@ -152,6 +149,7 @@ export default {
 .v-application {
   background-color: white !important;
 }
+
 .custom-logo {
   height: 40px;
   width: auto;
@@ -161,12 +159,11 @@ export default {
   flex: 1;
 }
 
-nav v-btn  {
+nav v-btn {
   color: #42b983;
 }
 
 .custom-title {
   color: #256649;
 }
-
 </style>
