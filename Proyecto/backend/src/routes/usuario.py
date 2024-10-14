@@ -12,28 +12,22 @@ usuarios_collection = conn.alloxentric_db.usuario
 def find_all_usuarios():
     return usuariosEntity(conn.alloxentric_db.usuario.find())
 
-@usuarios.post('/usuarios', tags=["Usuarios"])
-def create_usuario(usuario: Usuario):
-    # Obtener el último ID de usuario
-    last_user = usuarios_collection.find_one(sort=[("id_usuario", -1)])
-    next_id = (last_user["id_usuario"] + 1) if last_user else 0
+@usuarios.get('/usuarios/{keycloak_id}')
+async def get_usuario_by_keycloak_id(keycloak_id: str):
+    usuario = conn.alloxentric_db.usuario.find_one({"id_usuario": keycloak_id})
 
-    # Verificar si el usuario ya existe (por email)
-    existing_usuario = usuarios_collection.find_one({"email": usuario.email})
-    if existing_usuario:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"El usuario con email {usuario.email} ya existe."
-        )
+    if usuario:
+        return {"message": "Usuario encontrado", "id": str(usuario["_id"])}
+    raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    # Asignar el nuevo ID y crear el usuario
-    usuario.id_usuario = next_id
-    new_usuario = usuario.dict()
-    usuarios_collection.insert_one(new_usuario)
+@usuarios.post('/usuarios', status_code=status.HTTP_201_CREATED)
+async def create_usuario(usuario: Usuario):
+    if conn.alloxentric_db.usuario.find_one({"id_usuario": usuario.id_usuario}):
+        raise HTTPException(status_code=400, detail="El usuario ya existe")
 
-    # Obtener el usuario recién creado
-    created_usuario = usuarios_collection.find_one({"id_usuario": next_id})
-    return usuarioEntity(created_usuario)
+    usuario_data = usuario.dict()
+    result = conn.alloxentric_db.usuario.insert_one(usuario_data)
+    return {"message": "Usuario guardado correctamente", "id": str(result.inserted_id)}
 
 @usuarios.get('/usuarios/{id}', tags=["Usuarios"])
 def find_usuario(id_plan: int ):

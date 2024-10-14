@@ -18,13 +18,13 @@ class Venta(BaseModel):
     total_pagado: int
 
 class Usuario(BaseModel):
-    id_usuario: Optional[int]
+    id_usuario: str
+    username: str
     nombre: str
     apellido: str
     prefijo: str
     numero_telefono: int
     email: str
-    pwd: str
 
 class CreateCheckoutSession(BaseModel):
     price: int

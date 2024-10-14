@@ -42,6 +42,8 @@
 </template>
 
 <script>
+import keycloak from '@/keycloak';
+
 export default {
     name: 'HomePage',
     data() {
@@ -86,9 +88,55 @@ export default {
     },
     methods: {
         handleLogin() {
-            // Aquí iría la lógica de inicio de sesión
+            
             console.log('Intento de inicio de sesión con:', this.email, this.password)
+        },
+        async get_user_data() {
+            if (keycloak.authenticated) {
+                const token = keycloak.tokenParsed;
+
+                const userData = {
+                    id_usuario: token.sub,
+                    nombre: token.given_name || '',  // Keycloak suele usar given_name para el nombre
+                    apellido: token.family_name || '',  // family_name para el apellido
+                    prefijo: token.prefijo || '',
+                    numero_telefono: parseInt(token.telefono) || 0,  // Asegúrate de que sea un número
+                    email: token.email || '',
+                    username: token.preferred_username || '',
+                };
+                
+                // Mostrar en consola para depuración
+                console.log('Datos del usuario:', userData);
+
+                try {
+                    const response = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`);
+
+                    if (response.status === 404) {
+                        // Usuario no existe, lo guardamos
+                        const saveResponse = await fetch('http://localhost:8000/usuarios', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(userData),
+                        });
+
+                        if (saveResponse.ok) {
+                            console.log('Usuario guardado correctamente');
+                        } else {
+                            throw new Error('Error al guardar los datos del usuario');
+                        }
+                    } else {
+                        console.log('El usuario ya existe en la base de datos');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
         }
+    },
+    mounted() {
+        this.get_user_data();
     }
 }
 </script>
