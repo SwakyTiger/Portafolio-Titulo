@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Request, Depends
-from bson import ObjectId
 from ..models.models import CreateCheckoutSession, Venta
 from src.config.db import conn
 from datetime import datetime
+from bson import ObjectId
 import stripe
 import logging
 
@@ -92,6 +92,52 @@ def obtener_id_plan(plan_name: str) -> str:
         logging.warning(f"No se encontró el plan con nombre: {plan_name}")
         return None
     
+@pagos.get("/suscripciones/{id_usuario}", tags=["pagos"])
+async def obtener_suscripciones(id_usuario: str):
+    try:
+        # 1. Obtener todas las ventas del usuario
+        ventas = list(conn.alloxentric_db.ventas.find({"id_usuario": id_usuario}))
+        
+        # 2. Para cada venta, obtener los detalles del plan correspondiente
+        for venta in ventas:
+            id_plan = venta.get("id_plan")
+            if id_plan:  # Si existe un id_plan en la venta
+                plan = conn.alloxentric_db.planes.find_one({"id_plan": id_plan})
+                if plan:
+                    venta["nombre_plan"] = plan["nombre"]  # Añadir el nombre del plan a la venta
+                    print(venta["nombre_plan"])
+                else:
+                    venta["nombre_plan"] = "Plan desconocido"  # En caso de no encontrar el plan
+            else:
+                venta["nombre_plan"] = "Plan no especificado"
+
+        return list(ventas)
+    except Exception as e:
+        logging.error(f"Error obteniendo suscripciones: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error obteniendo las suscripciones")
+
+@pagos.post("/cancelar_suscripcion/{id_usuario}/{id_suscripcion}", tags=["pagos"])
+async def cancelar_suscripcion(id_usuario: str, id_suscripcion: str):
+    try:
+        # 1. Cancelar la suscripción en Stripe
+        suscripcion_stripe = stripe.Subscription.delete(id_suscripcion)
+
+        # 2. Actualizar el estado de la suscripción en la base de datos
+        result = conn.alloxentric_db.ventas.update_one(
+            {"id_usuario": id_usuario, "id_suscripcion": id_suscripcion},
+            {"$set": {"estado": "canceled"}}
+        )
+        
+        if result.modified_count == 1:
+            return {"message": "Suscripción cancelada exitosamente"}
+        else:
+            raise HTTPException(status_code=404, detail="No se encontró la suscripción para cancelar")
+
+    except Exception as e:
+        logging.error(f"Error cancelando suscripción: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error cancelando la suscripción")
+    
+# Ruta para registrar la venta
 @pagos.post("/record-sale", tags=["pagos"])
 async def record_sale(session_id: str, request: Request):
     try:
@@ -148,6 +194,7 @@ async def record_sale(session_id: str, request: Request):
         suscripcion = stripe.Subscription.retrieve(suscripcion_id)
         fecha_vencimiento_unix = suscripcion.current_period_end  # Fecha de vencimiento en formato UNIX
         fecha_vencimiento = datetime.utcfromtimestamp(fecha_vencimiento_unix)  # Convertir a formato legible
+        estado = suscripcion.get('status')
 
         # Crear el objeto de venta con un id_venta generado automáticamente
         venta = {
@@ -158,7 +205,7 @@ async def record_sale(session_id: str, request: Request):
             "fecha_venta": datetime.utcnow(),
             "fecha_vencimiento": fecha_vencimiento,  # Registrar la fecha de vencimiento
             "total_pagado": session.amount_total if session.amount_total else 0,
-            #"estado": "pendiente"  # Estado inicial
+            "estado": estado  # Estado inicial
         }
         logging.info(f"Datos de venta a insertar: {venta}")
 

@@ -11,6 +11,7 @@ import historyTranscriptor from '@/components/views/historyTranscriptor.vue'
 import miCuenta from '@/components/views/miCuenta.vue'
 import home from '@/components/views/Home.vue'
 import editarInfoUser from '@/components/views/editarInfoUser.vue'
+import miSuscripcion from '@/components/views/miSuscripcion.vue'
 import keycloak from '@/keycloak';
 
 const routes = [
@@ -80,6 +81,11 @@ const routes = [
     path: '/editarInfoUser',
     name: 'editarInfoUser',
     component: editarInfoUser
+  },
+  {
+    path: '/miSuscripcion',
+    name: 'miSuscripcion',
+    component: miSuscripcion
   }
 ]
 

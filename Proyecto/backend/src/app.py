@@ -3,7 +3,7 @@ from src.routes.plans import plans
 from src.routes.ventas import ventas
 from src.routes.usuario import usuarios
 from src.routes.pagos import pagos
-from src.routes.stripeWebhook import stripe_router
+from src.routes.estadoSuscripcion import validarEstado
 from src.auth import keycloak_openid
 from fastapi.middleware.cors import CORSMiddleware
 import stripe
@@ -16,7 +16,7 @@ app.include_router(plans)
 app.include_router(ventas)
 app.include_router(usuarios)
 app.include_router(pagos)
-app.include_router(stripe_router)
+app.include_router(validarEstado)
 
 # Middleware para agregar Keycloak al estado de la solicitud
 @app.middleware("http")

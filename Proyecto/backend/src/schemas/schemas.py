@@ -20,8 +20,9 @@ def ventaEntity(item) -> dict:
         "id_usuario": item["id_usuario"],
         "id_plan": item["id_plan"],
         "fecha_venta": item["fecha_venta"],
-        "fecha_vencimiento": item["fecha_vencimiento"], 
-        "total_pagado": item["total_pagado"]
+        "fecha_vencimiento": item["fecha_vencimiento"],  # Se puede hacer opcional si al crear la venta inicial aún no tienes la fecha
+        "total_pagado": item["total_pagado"],
+        "estado": item["estado"]
     }
 
 def ventasEntity(entity) -> list:

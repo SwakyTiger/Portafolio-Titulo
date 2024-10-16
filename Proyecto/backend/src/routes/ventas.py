@@ -66,28 +66,27 @@ async def get_ventas(year: Optional[int] = None, month: Optional[int] = None):
         return {"error": str(e)}, 500
 
 
-@ventas.post('/ventas', tags=["ventas"])
+ventas.post('/ventas', tags=["ventas"])
 def create_venta(venta: Venta):
-    existing_venta = conn.alloxentric_db.ventas.find_one({"id_venta": venta.id_venta})
+    existing_venta = conn.alloxentric_db.ventas.find_one({"id_suscripcion": venta.id_suscripcion})
     if existing_venta:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"la venta con id {venta.id_venta} ya existe."
+            detail=f"la venta con id {venta.id_suscripcion} ya existe."
         )
     new_venta = dict(venta)
     id = conn.alloxentric_db.ventas.insert_one(new_venta).inserted_id
 
     venta = conn.alloxentric_db.ventas.find_one({"_id": id})
     return ventaEntity(venta)
-
 @ventas.get('/ventas/{id}', tags=["ventas"])
 def find_venta(id_venta: int ):
     return ventaEntity(conn.alloxentric_db.ventas.find_one({"id_venta": id_venta}))
 
 @ventas.put('/ventas/{id}', response_model=Venta, tags=["ventas"])
-def update_venta(id: int, venta: Venta):
+def update_venta(id: str, venta: Venta):
     result = conn.alloxentric_db.ventas.find_one_and_update(
-        {"id_venta": id},
+        {"id_suscripcion": id},
         {"$set": dict(venta)},
         return_document=True
     )

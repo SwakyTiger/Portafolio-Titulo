@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 class Plan(BaseModel):
-    id_plan: int
+    id_plan: str #Stripe pide que sea en string para poder insertar la venta
     fecha_modificacion: str
     nombre: str
     precio: float
@@ -17,7 +17,8 @@ class Venta(BaseModel):
     fecha_venta: datetime
     fecha_vencimiento: datetime
     total_pagado: int
-
+    estado: str
+    
 class Usuario(BaseModel):
     id_usuario: str
     username: str
