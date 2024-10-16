@@ -2,12 +2,11 @@
     <v-footer class="footer" color="#5A5A5A">
       <v-container>
         <v-row justify="space-between">
-          <!-- Logo y redes sociales -->
           <v-col cols="12" md="4" class="d-flex flex-column align-items-start">
             <img
               :src="require('@/assets/alloxentric_logo.png')"
-              alt="Alloxentric Logo"
-              class="custom-logo"
+              alt="Alloxentric"
+              class="logo-footer"
             />
             <div class="social-icons">
               <v-icon>mdi-facebook</v-icon>
@@ -31,7 +30,7 @@
           <v-col cols="12" md="4" >
             <h4>Contacto</h4>
             <p>Tel: +123 456 789</p>
-            <p>Email: info@yourcompany.com</p>
+            <p>Email: info@gmail.com</p>
           </v-col>
           
         </v-row>
@@ -52,8 +51,10 @@
   </script>
   
   <style scoped>
-  .custom-logo {
+  .logo-footer {
+
     width: 200px;
+    margin-bottom: 20px;
   }
   
   .footer {
@@ -63,11 +64,6 @@
     width: 100%;
     position: relative;
     bottom: 0;
-  }
-  
-  .logo {
-    width: 150px;
-    margin-bottom: 20px;
   }
   
   .social-icons {

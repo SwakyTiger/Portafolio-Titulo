@@ -11,10 +11,11 @@ class Plan(BaseModel):
     total_segundos: int
 
 class Venta(BaseModel):
-    id_venta: int
+    id_suscripcion: int
     id_usuario: int
     id_plan: int
     fecha_venta: datetime
+    fecha_vencimiento: datetime
     total_pagado: int
 
 class Usuario(BaseModel):

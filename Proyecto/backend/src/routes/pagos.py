@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request, Depends
+from bson import ObjectId
 from ..models.models import CreateCheckoutSession, Venta
 from src.config.db import conn
 from datetime import datetime
@@ -91,8 +92,6 @@ def obtener_id_plan(plan_name: str) -> str:
         logging.warning(f"No se encontró el plan con nombre: {plan_name}")
         return None
     
-# Ruta para registrar la venta
-from bson import ObjectId
 @pagos.post("/record-sale", tags=["pagos"])
 async def record_sale(session_id: str, request: Request):
     try:
@@ -139,19 +138,32 @@ async def record_sale(session_id: str, request: Request):
             raise HTTPException(status_code=404, detail=f"No se encontró id del plan para el nombre proporcionado: {plan_name}")
         logging.info(f"ID del plan encontrado: {id_plan}")
 
+        # Obtener el ID de la suscripción desde la sesión
+        if hasattr(session, 'subscription'):
+            suscripcion_id = session.subscription  # Asumir que session.subscription tiene el ID de la suscripción
+        else:
+            raise HTTPException(status_code=404, detail="No se encontró la suscripción en la sesión")
+
+        # Obtener detalles de la suscripción desde Stripe
+        suscripcion = stripe.Subscription.retrieve(suscripcion_id)
+        fecha_vencimiento_unix = suscripcion.current_period_end  # Fecha de vencimiento en formato UNIX
+        fecha_vencimiento = datetime.utcfromtimestamp(fecha_vencimiento_unix)  # Convertir a formato legible
+
         # Crear el objeto de venta con un id_venta generado automáticamente
         venta = {
-            "_id": str(ObjectId()),  # Genera un ObjectId automáticamente
+            "_id": str(ObjectId()),
+            "id_suscripcion": suscripcion_id,  # ID de la suscripción
             "id_usuario": id_usuario if id_usuario else "No disponible",
             "id_plan": id_plan if id_plan else 0,  # id_plan ahora tendrá el valor correcto
             "fecha_venta": datetime.utcnow(),
-            "total_pagado": session.amount_total if session.amount_total else 0,  # Asegúrate de que el total esté correcto
-            #"session_id": session_id  # Agrega session_id para referencia
+            "fecha_vencimiento": fecha_vencimiento,  # Registrar la fecha de vencimiento
+            "total_pagado": session.amount_total if session.amount_total else 0,
+            #"estado": "pendiente"  # Estado inicial
         }
         logging.info(f"Datos de venta a insertar: {venta}")
 
         # Insertar la venta en MongoDB
-        conn.alloxentric_db.ventas.insert_one(venta)  # Añadir await aquí
+        conn.alloxentric_db.ventas.insert_one(venta)
 
         return {"message": "Venta registrada exitosamente", "venta": venta}
 

@@ -1,10 +1,12 @@
-// Styles
-import '@mdi/font/css/materialdesignicons.css'
+// plugins/vuetify.js
 import 'vuetify/styles'
-
-// Vuetify
 import { createVuetify } from 'vuetify'
+import '@mdi/font/css/materialdesignicons.css' // Asegura la importación
 
-export default createVuetify(
-  // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
-)
+const vuetify = createVuetify({
+  icons: {
+    defaultSet: 'mdi', // Usar Material Design Icons
+  },
+})
+
+export default vuetify

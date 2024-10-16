@@ -1,20 +1,22 @@
 <template>
   <v-app id="app" class="d-flex flex-column min-vh-100">
-    <v-app-bar app color="#ffffff" dark>
-      <v-container class="d-flex align-center">
-        <router-link to="/" class="d-flex align-center" style="text-decoration: none;">
+    <v-app-bar app color="#ffffff">
+      <router-link  to="/" class="d-flex align-center" >
           <img :src="require('@/assets/alloxentric_logo_only.png')" alt="Alloxentric Logo" class="custom-logo" />
-        </router-link>
-
-        <v-spacer></v-spacer>
+      </router-link>
+      <v-container class="d-flex align-center">
+        
 
         <nav class="d-none d-md-flex align-center">
-          <v-btn text to="/" color="#42b983">Inicio</v-btn>
-          <v-btn text to="/planDetails" color="#42b983">Planes</v-btn>
-          <v-btn v-if="!isAuthenticated" text href="http://localhost:8081/realms/Transcriptor/login-actions/registration?client_id=transcriptor_alloxentric&tab_id=1Ss6hqcO4j8&client_data=eyJydSI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODA4MC8iLCJydCI6ImNvZGUiLCJybSI6ImZyYWdtZW50Iiwic3QiOiIyNzlmZWQ3Ny0yMGIyLTRhMmYtYjk1NS1hYmY5MGExYTQ4NDUifQ" color="#42b983">Registrarse</v-btn>
-          <v-btn v-if="isAdmin" text to="/CuadraturaMensual" color="#42b983">Cuadratura Mensual</v-btn>
-          <v-btn v-if="isAdmin" text to="/crudPlanes" color="#42b983">Administrador de Planes</v-btn>
-          <v-btn v-if="isAdmin" text to="/ventasReport" color="#42b983">Administrador de Ventas</v-btn>
+          <v-btn text to="/" color="#42b983"><v-icon>mdi-home</v-icon>Inicio</v-btn>
+          
+          <v-btn text to="/planDetails" color="#42b983"><v-icon>mdi-cash</v-icon>Planes</v-btn>
+          <v-btn v-if="!isAuthenticated" text
+            href="http://localhost:8081/realms/Transcriptor/protocol/openid-connect/registrations?client_id=transcriptor_alloxentric&response_type=code&scope=openid&redirect_uri=http://localhost:8080/"
+            color="#42b983">Registrarse</v-btn>
+          <v-btn v-if="isAdmin" text to="/CuadraturaMensual" color="#42b983"><v-icon>mdi-calculator</v-icon>Cuadratura Mensual</v-btn>
+          <v-btn v-if="isAdmin" text to="/crudPlanes" color="#42b983"><v-icon>mdi-view-list</v-icon>Administrador de Planes</v-btn>
+          <v-btn v-if="isAdmin" text to="/ventasReport" color="#42b983"><v-icon>mdi-chart-bar</v-icon>Administrador de Ventas</v-btn>
           <v-btn v-if="!isAuthenticated" text @click="handleAuthAction" id="authButton" color="#42b983">
             Iniciar Sesión
           </v-btn>
@@ -31,34 +33,43 @@
     <!-- Drawer para el menú desplegable -->
     <v-navigation-drawer v-model="drawer" app temporary>
       <v-list>
+        <v-list-item v-if="isAuthenticated" to="/miCuenta" link>
+          <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')"
+            class="custom-title"><v-list-item-title class="custom-title">{{ userName }}</v-list-item-title>
+            <v-list-item-subtitle>Bienvenido</v-list-item-subtitle></v-list-item>
+        </v-list-item>
+
+        <v-divider v-if="isAuthenticated" class="my-2"></v-divider>
+
         <v-list-item to="/" link>
-          <v-list-item-title>Inicio</v-list-item-title>
+          <v-list-item-title> <v-icon>mdi-home</v-icon> Inicio</v-list-item-title>
         </v-list-item>
         <v-list-item to="/planDetails" link>
-          <v-list-item-title>Planes</v-list-item-title>
+          <v-list-item-title><v-icon>mdi-cash</v-icon>Planes</v-list-item-title>
         </v-list-item>
-        <v-list-item to="/RegistroUsuario" link>
+        <v-list-item v-if="!isAuthenticated"
+          href="http://localhost:8081/realms/Transcriptor/protocol/openid-connect/registrations?client_id=transcriptor_alloxentric&response_type=code&scope=openid&redirect_uri=http://localhost:8080/">
           <v-list-item-title>Registrarse</v-list-item-title>
         </v-list-item>
         <v-list-item v-if="isAdmin" to="/CuadraturaMensual" link>
-          <v-list-item-title>Cuadratura Mensual</v-list-item-title>
+          <v-list-item-title><v-icon>mdi-calculator</v-icon>Cuadratura Mensual</v-list-item-title>
         </v-list-item>
         <v-list-item v-if="isAdmin" to="/crudPlanes" link>
-          <v-list-item-title>Administrador de Planes</v-list-item-title>
+          <v-list-item-title><v-icon>mdi-view-list</v-icon>Administrador de Planes</v-list-item-title>
         </v-list-item>
         <v-list-item v-if="isAdmin" to="/ventasReport" link>
-          <v-list-item-title>Administrador de Ventas</v-list-item-title>
+          <v-list-item-title><v-icon>mdi-chart-bar</v-icon>Administrador de Ventas</v-list-item-title>
         </v-list-item>
-        <v-list-item @click="handleAuthAction" link>
-          <v-list-item-title>{{ isAuthenticated ? '' : 'Iniciar Sesión' }}</v-list-item-title>
+        <v-list-item v-if="!isAuthenticated" @click="handleAuthAction" link>
+          <v-list-item-title>Iniciar Sesión</v-list-item-title>
         </v-list-item>
-        <v-list-item v-if="isAuthenticated" to="/miCuenta" link>
-          <v-list-item-avatar>
-            <v-img :src="require('@/assets/icon-account.png')" alt="User Avatar"></v-img>
-          </v-list-item-avatar>
-          <v-list-item-title>{{ userName }}</v-list-item-title>
-          <v-list-item-subtitle>Bienvenido</v-list-item-subtitle>
-        </v-list-item>
+
+        <template v-if="isAuthenticated">
+          <v-spacer></v-spacer>
+          <v-list-item @click="handleAuthAction" link>
+            <v-list-item-title class="error--text"><v-icon color="error">mdi-logout</v-icon>Cerrar Sesión</v-list-item-title>
+          </v-list-item>
+        </template>
       </v-list>
     </v-navigation-drawer>
 
@@ -85,7 +96,8 @@ export default {
     return {
       drawer: false,
       isAuthenticated: false, // Estado de autenticación
-      isAdmin: false // Estado para verificar si el usuario es admin
+      isAdmin: false, // Estado para verificar si el usuario es admin
+      userName: ''
     };
   },
   methods: {
@@ -108,7 +120,6 @@ export default {
         // Verifica si el usuario tiene el rol 'admin' en el cliente 'transcriptor_alloxentric'
         const clientRoles = token.resource_access?.['transcriptor_alloxentric']?.roles || [];
 
-        console.log('Sesión cerrada')
         this.isAdmin = clientRoles.includes('admin');
       }
     },
@@ -134,10 +145,12 @@ export default {
     keycloak.onAuthSuccess = () => {
       this.isAuthenticated = true;
       this.checkUserRole(); // Verifica el rol del usuario cuando se autentique
+      this.userName = this.get_name_user();
     };
     keycloak.onAuthLogout = () => {
       this.isAuthenticated = false;
       this.isAdmin = false; // Restablece el rol de admin cuando se cierre sesión
+      this.userName = '';
     };
 
     this.userName = this.get_name_user();
@@ -146,14 +159,32 @@ export default {
 </script>
 
 <style>
+.d-flex{
+  display: flex !important;
+  justify-content: end !important;
+}
+
+
+.custom-logo {
+  padding-left: 10px;
+  height: 40px;
+  width: auto;
+}
+
+@media (max-width: 1280px) {
+  .custom-logo{
+    display: none !important;
+  }
+}
+
+.v-icon {
+  margin-right: 5px;
+}
+
 .v-application {
   background-color: white !important;
 }
 
-.custom-logo {
-  height: 40px;
-  width: auto;
-}
 
 .v-main {
   flex: 1;
@@ -165,5 +196,18 @@ nav v-btn {
 
 .custom-title {
   color: #256649;
+  font-weight: bold;
+}
+
+.v-list-item__avatar {
+  margin-right: 16px;
+}
+
+.v-list-item-title{
+  color: #42b983 !important;
+}
+
+.error--text {
+  color: #ff5252 !important;
 }
 </style>

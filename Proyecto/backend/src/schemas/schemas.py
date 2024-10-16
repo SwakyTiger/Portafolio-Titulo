@@ -16,10 +16,12 @@ def plansEntity(entity) -> list:
 #ESQUEMA DE VENTAS
 def ventaEntity(item) -> dict:
     return{
-        "id_venta": item["id_venta"],
+        "id_suscripcion": item["id_suscripcion"],
         "id_usuario": item["id_usuario"],
         "id_plan": item["id_plan"],
-        "fecha_venta": item["fecha_venta"]
+        "fecha_venta": item["fecha_venta"],
+        "fecha_vencimiento": item["fecha_vencimiento"], 
+        "total_pagado": item["total_pagado"]
     }
 
 def ventasEntity(entity) -> list:
@@ -29,12 +31,12 @@ def ventasEntity(entity) -> list:
 def usuarioEntity(item) -> dict:
     return{
         "id_usuario": item["id_usuario"],
+        "username": item["username"],
         "nombre": item["nombre"],
         "apellido": item["apellido"],
         "prefijo": item["prefijo"],
         "numero_telefono": item["numero_telefono"],
-        "email": item["email"],
-        "pwd": item["pwd"]
+        "email": item["email"]
 
     }
 

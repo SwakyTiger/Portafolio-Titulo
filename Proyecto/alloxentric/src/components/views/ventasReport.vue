@@ -8,16 +8,28 @@
       <v-select v-model="selectedMonth" :items="months" label="Mes" outlined></v-select>
       <v-btn @click="fetchVentas">Filtrar Ventas</v-btn>
       <v-data-table :headers="headers" :items="ventas" :items-per-page="10" v-model:page="page" class="custom-table">
+        <template v-slot:no-data>
+          <v-alert type="info" dismissible>
+            No hay ventas disponibles para los filtros seleccionados.
+          </v-alert>
+        </template>
+        <template v-slot:[`item.usuario_info.username`]="{ item }">
+          <span>{{ item.usuario_info.username || 'N/A' }}</span>
+        </template>
         <template v-slot:[`item.fecha_venta`]="{ item }">
           <span>{{ formatDate(item.fecha_venta) }}</span>
         </template>
-        <template v-slot:[`item.precio`]="{ item }">
-          <span>{{ formatCurrency(item.precio) }}</span>
+        <template v-slot:[`item.plan_info.nombre`]="{ item }">
+          <span>{{ item.plan_info.nombre || 'N/A' }}</span>
+        </template>
+        <template v-slot:[`item.total_pagado`]="{ item }">
+          <span>{{  formatCurrency(item.total_pagado) }}</span>
         </template>
         <template v-slot:[`item.details`]="{ item }">
           <v-btn @click="showDetails(item)" outlined>
             <template v-slot:prepend>
-              <img :src="require('@/assets/icon-detalle.png')" alt="Detalles" class="custom-icon" />Detalle
+              <img :src="require('@/assets/icon-detalle.png')" alt="Detalles" class="custom-icon" />
+              Detalle
             </template>
           </v-btn>
         </template>
@@ -29,24 +41,23 @@
         <h1>Total de ventas: {{ formatCurrency(venta) }}</h1>
       </div>
       <div class="botones-reportes">
-        <v-btn  @click="generatePDF">Generar Reporte de la Tabla</v-btn>
+        <v-btn @click="generatePDF">Generar Reporte de la Tabla</v-btn>
       </div>
     </div>
 
-    <!-- Ventana emergente para mostrar detalles de la venta -->
     <v-dialog v-model="dialog" max-width="600px">
       <v-card>
-
         <v-card-text>
           <v-expansion-panels>
             <v-expansion-panel>
               <v-expansion-panel-content class="detalles">
                 <h1>Detalles de la Venta</h1>
                 <h4>Detalles del Comprador</h4>
-                <p>- Nombre: {{ selectedVenta.nombre_usuario }} {{ selectedVenta.apellido_usuario }}</p>
-                <p>- Correo: {{ selectedVenta.email }} </p>
-                <p>- País: {{ selectedVenta.pais }} </p>
-                <p>- Numero Telefónico: {{ selectedVenta.prefijo }} {{ selectedVenta.numero_telefono }}</p>
+                <p>- Nombre: {{ selectedVenta.usuario_info.nombre }} {{ selectedVenta.usuario_info.apellido }}</p>
+                <p>- Correo: {{ selectedVenta.usuario_info.email }}</p>
+                <p>- País: {{ selectedVenta.usuario_info.pais }}</p>
+                <p>- Numero Telefónico: {{ selectedVenta.usuario_info.prefijo }} {{
+                  selectedVenta.usuario_info.numero_telefono }}</p>
               </v-expansion-panel-content>
             </v-expansion-panel>
           </v-expansion-panels>
@@ -56,9 +67,8 @@
             <v-expansion-panel>
               <v-expansion-panel-content class="detalles">
                 <h4>Detalles de Compra</h4>
-                <p>- Tipo de plan: {{ selectedVenta.nombre_plan }}</p>
-                <p>- Precio: {{ formatCurrency(selectedVenta.precio) }}</p>
-                <p>- Telefono afiliado: {{ selectedVenta.prefijo }} {{ selectedVenta.numero_telefono }}</p>
+                <p>- Tipo de plan: {{ selectedVenta.plan_info.nombre }}</p>
+                <p>- Precio: {{ formatCurrency(selectedVenta.total_pagado) }}</p>
                 <p>- Fecha de Venta: {{ formatDate(selectedVenta.fecha_venta) }}</p>
               </v-expansion-panel-content>
             </v-expansion-panel>
@@ -82,9 +92,8 @@ export default {
   name: 'VentasReport',
   data() {
     const currentYear = new Date().getFullYear();
-    const startYear = 2023;  // Puedes cambiarlo al año en el que comienzas a almacenar datos
+    const startYear = 2023;
 
-    // Generar lista de años desde startYear hasta el año actual
     const years = [{ title: 'Todos los años', value: null }];
     for (let year = startYear; year <= currentYear; year++) {
       years.push({ title: year.toString(), value: year });
@@ -92,19 +101,20 @@ export default {
 
     return {
       page: 1,
-      ventas: [],  // Datos de la API
-      venta: 0,    // Total de ventas
+      ventas: [],
+      venta: 0,
       headers: [
-        { title: 'Código', value: 'id_venta' },
+        { title: 'Nombre de Usuario', value: 'usuario_info.username' },
         { title: 'Fecha/Hora', value: 'fecha_venta' },
-        { title: 'Tipo de Plan', value: 'nombre_plan' },
-        { title: 'Precio', value: 'precio' },
-        { title: 'Detalles de compra', value: 'details' }
+        { title: 'Tipo de Plan', value: 'plan_info.nombre' }, // Nuevo encabezado
+        { title: 'Precio', value: 'total_pagado' },
+        { title: 'Detalles de compra', value: 'details' },
       ],
       dialog: false,
+      selectedVenta: null,
       selectedYear: null,
       selectedMonth: null,
-      years: years,  // Lista de años con opción de "sin filtro"
+      years: years,
       months: [
         { title: 'Todos los meses', value: null },
         { title: 'Enero', value: 1 },
@@ -118,23 +128,26 @@ export default {
         { title: 'Septiembre', value: 9 },
         { title: 'Octubre', value: 10 },
         { title: 'Noviembre', value: 11 },
-        { title: 'Diciembre', value: 12 }
-      ],  // Lista de meses con nombres
-    }
+        { title: 'Diciembre', value: 12 },
+      ],
+    };
   },
   methods: {
     async fetchVentas() {
       try {
-        const response = await axios.get('http://localhost:8000/ventas', {
-          params: {
-            anio: this.selectedYear || null,  // Enviar null si no hay filtro
-            mes: this.selectedMonth || null   // Enviar null si no hay filtro
-          }
-        });
-        this.ventas = response.data;
-        this.calculateTotalVenta();
+        const params = {
+          year: this.selectedYear,
+          month: this.selectedMonth,
+        };
+        const response = await axios.get('http://localhost:8000/ventas', { params });
+        this.ventas = response.data.map(venta => ({
+          ...venta,
+          plan_info: venta.plan_info || { nombre: 'Sin plan' },
+          usuario_info: venta.usuario_info || { nombre: 'Sin usuario' },
+        }));
+        this.calculateTotalVenta(); // Calcula el total después de obtener las ventas
       } catch (error) {
-        console.error('Error fetching items:', error);
+        console.error('Error fetching ventas:', error);
       }
     },
     showDetails(venta) {
@@ -145,7 +158,9 @@ export default {
       return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(amount);
     },
     formatDate(date) {
+      if (!date) return '';
       const formattedDate = new Date(date);
+      if (isNaN(formattedDate)) return '';
       const year = formattedDate.getFullYear();
       const month = String(formattedDate.getMonth() + 1).padStart(2, '0');
       const day = String(formattedDate.getDate()).padStart(2, '0');
@@ -155,53 +170,50 @@ export default {
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     },
     calculateTotalVenta() {
-      this.venta = this.ventas.reduce((sum, venta) => sum + venta.precio, 0);
+      this.venta = this.ventas.reduce((sum, venta) => sum + venta.total_pagado, 0);
     },
     generatePDF() {
-      const doc = new jsPDF();
+      try {
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text('Administrador de Ventas', 14, 22);
 
-      // Título
-      doc.setFontSize(18);
-      doc.text('Administrador de Ventas', 14, 22);
+        const selectedYearText = this.selectedYear ? `Año ${this.selectedYear}` : 'Todos los años';
+        const selectedMonthText = this.selectedMonth
+          ? this.months.find(month => month.value === this.selectedMonth).title
+          : 'Todos los meses';
+        doc.setFontSize(14);
+        doc.text(`${selectedYearText} - ${selectedMonthText}`, 14, 30);
 
-      // Agregar el filtro seleccionado al PDF
-      const selectedYearText = this.selectedYear ? `Año ${this.selectedYear}` : 'Todos los años';
-      const selectedMonthText = this.selectedMonth
-        ? this.months.find(month => month.value === this.selectedMonth).title
-        : 'Todos los meses';
-      doc.setFontSize(14);
-      doc.text(`${selectedYearText} - ${selectedMonthText}`, 14, 30);
+        const startY = 40;
 
-      // Espacio entre el título y la tabla
-      const startY = 40;
+        const columns = ["Código de Venta", "Fecha", "Tipo de Plan", "Precio"];
+        const rows = this.ventas.map(item => [
+          item.id_venta,
+          this.formatDate(item.fecha_venta),
+          item.plan_info.nombre,
+          this.formatCurrency(item.total_pagado),
+        ]);
 
-      // Agregar tabla
-      const columns = ["Código de Venta", "Fecha", "Tipo de Plan", "Precio"];
-      const rows = this.ventas.map(item => [
-        item.id_venta,
-        this.formatDate(item.fecha_venta),
-        item.nombre_plan,
-        this.formatCurrency(item.precio)
-      ]);
+        doc.autoTable({
+          startY,
+          head: [columns],
+          body: rows,
+          theme: 'grid',
+        });
 
-      doc.autoTable({
-        startY,
-        head: [columns],
-        body: rows,
-        theme: 'grid',
-      });
-
-      // Total de ventas
-      doc.text(`Total de ventas: ${this.formatCurrency(this.venta)}`, 14, doc.lastAutoTable.finalY + 10);
-
-      // Guardar el PDF
-      doc.save('reporte_ventas.pdf');
-    }
+        doc.text(`Total de ventas: ${this.formatCurrency(this.venta)}`, 14, doc.lastAutoTable.finalY + 10);
+        doc.save('reporte_ventas.pdf');
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        this.$toast.error('Error al generar el PDF');
+      }
+    },
   },
   mounted() {
     this.fetchVentas();
-  }
-}
+  },
+};
 </script>
 
 
