@@ -8,20 +8,28 @@ topic: ~datos keep repeat ()
 u: (\[ _*1 \])  $$data_obb = ^jsonparse(transient NOFAIL  _0 )
 
 u: (!$obbdatos)
-	$obbdatos=1
-	$_endpoint = ^"http://34.0.57.244:5078/userdata"
+$obbdatos=1 
+$_endpoint = ^"http://host.docker.internal:8000/usuarios"# este deberia funcionar fuera de docker en caso de problemas http://localhost:8000/usuarios
 
-	$_username = $$data_obb.username
-	$_password = $$data_obb.password
-	$_idconversacion = $$data_obb.idconversacion
-	$_url = ^join($_endpoint ? username = $_username & password = $_password & id_conversacion = $_idconversacion)
-
-	$_header = ^" ~Accept: application/json ~Content-Type: application/json "
-
+$_username = "jon.doe" #$$data_obb.username
+$_url = ^join($_endpoint ? username = $_username)
+$obbdatos=2 
+    $_header = ^" ~Accept: application/json ~Content-Type: application/json "
+$obbdatos=3
+$obbdatos = $_url
+$obbdatos = $_header
+$$datae = ^jsonopen(direct GET $_url "" $_header)
+$obbdatos=8
+$$data = ^jsonparse(transient NOFAIL $$datae )
+$obbdatos=4 
+$$data = $$data[0]
+$$nombre = $$data.nombre
+$$numero_telefono = $$data.numero_telefono
+$obbdatos= $$data
 	$$data = ^jsonopen(direct GET $_url "" $_header)
 	$$data = ^jsonparse(transient NOFAIL $$data )
 
-  	$nombre = $$data.datos_contacto.NOMBRE_CLIENTE
+  	$nombrese = $$data.datos_contacto.NOMBRE_CLIENTE
   	$fecha_deuda = $$data.datos_contacto.FECHA_DEUDA
 	
 	# $fecha_deuda = ^"01-01-1991"

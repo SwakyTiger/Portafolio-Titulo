@@ -1,6 +1,7 @@
 ﻿topic: ~ustedEs keep repeat ()
 
-t: (!$sp)$sp = 0      
+t: (!$sp)
+        $sp = 0      
         $x = ^jsoncreate(TRANSIENT object)
                 $x.intencionContacto =  None
                 $x.intencionBot = SALUDO
@@ -13,6 +14,9 @@ t: (!$sp)$sp = 0
         1. transcribir un audio 
         2. contratar algun plan 
         3. ir a los ajustes de mi cuenta
+        hola
+        $$nombre
+        su numero de telefono es $$numero_telefono 
 u: () 	
 	$x = ^jsoncreate(TRANSIENT object)
                 $x.intencionContacto =  None
@@ -20,8 +24,6 @@ u: ()
                 $x.comandoAcanal = None
         [^jsonwrite($x)]
 	
-
-
 a: BUZON ( ~buzonc )
         $x = ^jsoncreate(TRANSIENT object)
                 $x.intencionContacto =  BUZON
