@@ -3,7 +3,7 @@ import Groq from 'groq-sdk';
 
 // Crear una instancia de Groq pasando la clave de API directamente
 const groq = new Groq({
-  apiKey: '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',
+  apiKey: 'apikeyaqui',
 });
 
 // Función para transcribir un archivo de audio
