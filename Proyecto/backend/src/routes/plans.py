@@ -30,7 +30,7 @@ def find_plan(id_plan: int ):
     return planEntity(conn.alloxentric_db.planes.find_one({"id_plan": id_plan}))
 
 @plans.put('/plans/{id}', response_model=Plan, tags=["plans"])
-def update_plan(id: int, plan: Plan):
+def update_plan(id: str, plan: Plan):
     result = conn.alloxentric_db.planes.find_one_and_update(
         {"id_plan": id},
         {"$set": dict(plan)},
@@ -45,7 +45,7 @@ def update_plan(id: int, plan: Plan):
 
 
 @plans.delete('/plans/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=["plans"])
-def delete_plan(id: int):
+def delete_plan(id: str):
     result = conn.alloxentric_db.planes.find_one_and_delete({"id_plan": id})
     if not result:
         raise HTTPException(
