@@ -1,5 +1,8 @@
 <template>
   <h1 class="resumenpago">Resumen Pago</h1>
+  <v-alert v-if="showAlert" type="error" dismissible @click="showAlert = false">
+    El usuario ya tiene una suscripción activa.
+  </v-alert>
   <v-container>
     <v-row justify="center" class="row">
       <v-col cols="12" md="8" >
@@ -54,26 +57,28 @@ export default {
       try {
         // Verificar si keycloak está autenticado
         if (keycloak.authenticated) {
-
+          console.log(keycloak.tokenParsed.sub)
           // Realizar la solicitud al backend con el nombre del usuario
           const response = await axios.post('http://localhost:8000/create-checkout-session', {
             plan_name: this.plan.nombre,
             price: this.plan.precio,
             user_email: this.usuario.email,  // Obtener el email desde el token
-            user_name: this.usuario.nombre  // Incluir el nombre completo del usuario
+            user_name: this.usuario.nombre,  // Incluir el nombre completo del usuario
+            id_usuario: keycloak.tokenParsed.sub
           });
 
           // Verifica que la URL de Stripe esté presente en la respuesta
           if (response.data.url) {
             window.location.href = response.data.url;
           } else {
+            this.showAlert = true;
             console.error("URL de Stripe no recibida:", response.data);
           }
         } else {
           console.error("El usuario no está autenticado");
         }
       } catch (error) {
-        console.error("Error al iniciar el pago:", error);
+          console.error("Error al iniciar el pago:", error);
       }
     }
   }

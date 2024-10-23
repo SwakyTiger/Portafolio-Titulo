@@ -99,7 +99,7 @@ def update_venta(id: str, venta: Venta):
 
 
 @ventas.delete('/ventas/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=["ventas"])
-def delete_venta(id: int):
+def delete_venta(id: str):
     result = conn.alloxentric_db.ventas.find_one_and_delete({"id_venta": id})
     if not result:
         raise HTTPException(

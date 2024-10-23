@@ -12,6 +12,18 @@ logging.basicConfig(level=logging.INFO)
 @pagos.post("/create-checkout-session", tags=["pagos"])
 def create_checkout_session(session_data: CreateCheckoutSession):
     try:
+        print(session_data)
+        # Verificar si el usuario ya tiene una suscripción activa
+        existing_subscription = conn.alloxentric_db.ventas.find_one({
+            "id_usuario": session_data.id_usuario,  # Asegúrate de pasar el ID del usuario en session_data
+            "estado": {"$in": ["active"]}
+        })
+        
+        if existing_subscription:
+            return HTTPException(
+                status_code=400, 
+                detail="El usuario ya tiene una suscripción activa."
+            )
         customer = stripe.Customer.create(
             email=session_data.user_email
         )
@@ -81,7 +93,6 @@ async def get_payment_details(session_id: str):
         logging.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Función para obtener el ID del plan desde MongoDB
 def obtener_id_plan(plan_name: str) -> str:
     logging.info(f"Buscando el plan con nombre: {plan_name}")
     plan = conn.alloxentric_db.planes.find_one({"nombre": plan_name})
@@ -91,51 +102,6 @@ def obtener_id_plan(plan_name: str) -> str:
     else:
         logging.warning(f"No se encontró el plan con nombre: {plan_name}")
         return None
-    
-@pagos.get("/suscripciones/{id_usuario}", tags=["pagos"])
-async def obtener_suscripciones(id_usuario: str):
-    try:
-        # 1. Obtener todas las ventas del usuario
-        ventas = list(conn.alloxentric_db.ventas.find({"id_usuario": id_usuario}))
-        
-        # 2. Para cada venta, obtener los detalles del plan correspondiente
-        for venta in ventas:
-            id_plan = venta.get("id_plan")
-            if id_plan:  # Si existe un id_plan en la venta
-                plan = conn.alloxentric_db.planes.find_one({"id_plan": id_plan})
-                if plan:
-                    venta["nombre_plan"] = plan["nombre"]  # Añadir el nombre del plan a la venta
-                    print(venta["nombre_plan"])
-                else:
-                    venta["nombre_plan"] = "Plan desconocido"  # En caso de no encontrar el plan
-            else:
-                venta["nombre_plan"] = "Plan no especificado"
-
-        return list(ventas)
-    except Exception as e:
-        logging.error(f"Error obteniendo suscripciones: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error obteniendo las suscripciones")
-
-@pagos.post("/cancelar_suscripcion/{id_usuario}/{id_suscripcion}", tags=["pagos"])
-async def cancelar_suscripcion(id_usuario: str, id_suscripcion: str):
-    try:
-        # 1. Cancelar la suscripción en Stripe
-        suscripcion_stripe = stripe.Subscription.delete(id_suscripcion)
-
-        # 2. Actualizar el estado de la suscripción en la base de datos
-        result = conn.alloxentric_db.ventas.update_one(
-            {"id_usuario": id_usuario, "id_suscripcion": id_suscripcion},
-            {"$set": {"estado": "canceled"}}
-        )
-        
-        if result.modified_count == 1:
-            return {"message": "Suscripción cancelada exitosamente"}
-        else:
-            raise HTTPException(status_code=404, detail="No se encontró la suscripción para cancelar")
-
-    except Exception as e:
-        logging.error(f"Error cancelando suscripción: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error cancelando la suscripción")
     
 # Ruta para registrar la venta
 @pagos.post("/record-sale", tags=["pagos"])
