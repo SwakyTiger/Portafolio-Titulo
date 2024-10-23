@@ -12,59 +12,52 @@ import logging
 ventas = APIRouter()
 
 @ventas.get('/ventas', tags=["ventas"])
-async def get_ventas(year: Optional[int] = None, month: Optional[int] = None):
+async def get_ventas(year: Optional[int] = None, month: Optional[int] = None, estado: Optional[str] = Query(None)):
     try:
-        # Construir la consulta de ventas
         query = {}
         if year:
-            query["fecha_venta"] = {"$gte": datetime(year, 1, 1), "$lt": datetime(year + 1, 1, 1)}
+            query["fecha_venta"] = {"$gte": datetime(
+                year, 1, 1), "$lt": datetime(year + 1, 1, 1)}
         if month:
             query["fecha_venta"]["$gte"] = datetime(year, month, 1)
             query["fecha_venta"]["$lt"] = datetime(year, month + 1, 1)
+        if estado:
+            query["estado"] = estado
 
-        # Obtener todas las ventas
+        
         ventas_list = list(conn.alloxentric_db.ventas.find(query))
-        print("Ventas encontradas:", ventas_list)
+        planes_list = {
+            plan["id_plan"]: plan for plan in conn.alloxentric_db.planes.find({})}
+        usuarios_list = {
+            usuario["id_usuario"]: usuario for usuario in conn.alloxentric_db.usuario.find({})}
 
-        # Obtener información de planes y usuarios
-        planes_list = {plan["id_plan"]: plan for plan in conn.alloxentric_db.planes.find({})}
-        usuarios_list = {usuario["id_usuario"]: usuario for usuario in conn.alloxentric_db.usuario.find({})}
-        print("Usuarios encontrados:", usuarios_list)
+        total_clientes = len(set(venta["id_usuario"] for venta in ventas_list))
 
-        # Formatear la respuesta
         response = []
         for venta in ventas_list:
             plan_info = planes_list.get(venta["id_plan"], {})
             usuario_info = usuarios_list.get(venta["id_usuario"], {})
-
-            response.append({
-                "id_suscripcion": venta["id_suscripcion"],
-                "id_usuario": venta["id_usuario"],
-                "id_plan": venta["id_plan"],
-                "fecha_venta": venta["fecha_venta"].isoformat(),
-                "fecha_vencimiento": venta["fecha_vencimiento"].isoformat(),
-                "total_pagado": venta["total_pagado"],
-                "plan_info": {
-                    "nombre": plan_info.get("nombre", "Sin plan"),
-                    "precio": plan_info.get("precio", 0),
-                    "fecha_modificacion": plan_info.get("fecha_modificacion", "")
-                },
-                "usuario_info": {
-                    "username": usuario_info.get("username", "Sin usuario"),
-                    "nombre": usuario_info.get("nombre", "Sin usuario"),
-                    "apellido": usuario_info.get("apellido", ""),
-                    "email": usuario_info.get("email", ""),
-                    "prefijo": usuario_info.get("prefijo", ""),
-                    "numero_telefono": usuario_info.get("numero_telefono", 0)
-                }
+            response.append({"id_suscripcion": venta["id_suscripcion"],
+                            "id_usuario": venta["id_usuario"], 
+                            "id_plan": venta["id_plan"],
+                            "fecha_venta": venta["fecha_venta"].isoformat(),
+                            "fecha_vencimiento": venta["fecha_vencimiento"].isoformat(),
+                            "total_pagado": venta["total_pagado"],
+                            "estado": venta["estado"],
+                            "plan_info": {"nombre": plan_info.get("nombre", "Sin plan"),
+                                        "precio": plan_info.get("precio", 0),
+                                        "fecha_modificacion": plan_info.get("fecha_modificacion", "")},
+                            "usuario_info": {"username": usuario_info.get("username", "Sin usuario"),
+                                            "nombre": usuario_info.get("nombre", "Sin usuario"),
+                                            "apellido": usuario_info.get("apellido", ""),
+                                            "email": usuario_info.get("email", ""),
+                                            "prefijo": usuario_info.get("prefijo", ""),
+                                            "numero_telefono": usuario_info.get("numero_telefono", 0)}
             })
-
-        return response
-
+        return {"ventas": response, "total_clientes": total_clientes}
     except Exception as e:
         print(f"Error al obtener ventas: {e}")
         return {"error": str(e)}, 500
-
 
 ventas.post('/ventas', tags=["ventas"])
 def create_venta(venta: Venta):

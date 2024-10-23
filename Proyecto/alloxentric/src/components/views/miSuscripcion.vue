@@ -56,7 +56,7 @@
 
               <v-card-text>
                 <v-list density="compact" class="text-h5 text-center pt-2 ">
-                  <v-list-item>Estado: {{ subscription.estado }}</v-list-item>
+                  <v-list-item>Estado: {{ getStatusText(subscription.estado) }}</v-list-item>
                 </v-list>
               </v-card-text>
 
@@ -176,11 +176,9 @@ export default {
       console.log(`Cancelar suscripción: ${subscriptionId}`);
 
       // Realiza la solicitud HTTP al backend para cancelar la suscripción
-      const response = await axios.post(`http://localhost:8000/suscripciones/cancelar_suscripcion/${subscriptionId}`);
+      const response = await axios.post(`http://localhost:8000/cancelar_suscripcion/${subscriptionId}`);
       
       if (response.data.message) {
-        // Mostrar un mensaje de éxito o actualizar la UI según sea necesario
-        this.$toast.success("Suscripción configurada para cancelarse al final del período.");
         console.log(response.data.message);
         // Opcional: Refrescar los datos de suscripción
         await this.fetchSubscriptionData();
@@ -212,6 +210,16 @@ export default {
     // Lógica para obtener los datos actualizados de las suscripciones del usuario
     // Esto debería hacer una llamada a la API para recuperar la suscripción actualizada
   },
+  getStatusText(status) {
+      const statusText = {
+        'active': 'Activo',
+        'past_due': 'Atrasado',
+        'unpaid': 'No pagado',
+        'canceled': 'Cancelado',
+        'cancel_at_period_end': 'Cancelado a fin de Mes'
+      };
+      return statusText[status] || status;
+    }
   },
   mounted() {
     this.fetchAvailablePlans();

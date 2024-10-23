@@ -106,7 +106,7 @@ export default {
       headers: [
         { title: 'Nombre de Usuario', value: 'usuario_info.username' },
         { title: 'Fecha/Hora', value: 'fecha_venta' },
-        { title: 'Tipo de Plan', value: 'plan_info.nombre' }, // Nuevo encabezado
+        { title: 'Tipo de Plan', value: 'plan_info.nombre' }, 
         { title: 'Precio', value: 'total_pagado' },
         { title: 'Detalles de compra', value: 'details' },
       ],
@@ -135,17 +135,11 @@ export default {
   methods: {
     async fetchVentas() {
       try {
-        const params = {
-          year: this.selectedYear,
-          month: this.selectedMonth,
-        };
-        const response = await axios.get('http://localhost:8000/ventas', { params });
-        this.ventas = response.data.map(venta => ({
-          ...venta,
-          plan_info: venta.plan_info || { nombre: 'Sin plan' },
-          usuario_info: venta.usuario_info || { nombre: 'Sin usuario' },
-        }));
-        this.calculateTotalVenta(); // Calcula el total después de obtener las ventas
+        const response = await axios.get('http://localhost:8000/ventas');
+        this.ventas = response.data.ventas;
+        this.totalClientes = response.data.total_clientes;
+        this.calculateTotalVenta();
+        this.planTypes = [...new Set(this.ventas.map(venta => venta.nombre_plan))];
       } catch (error) {
         console.error('Error fetching ventas:', error);
       }
