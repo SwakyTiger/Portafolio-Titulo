@@ -43,7 +43,6 @@ async def get_ventas(year: Optional[int] = None, month: Optional[int] = None, es
                             "fecha_venta": venta["fecha_venta"].isoformat(),
                             "fecha_vencimiento": venta["fecha_vencimiento"].isoformat(),
                             "total_pagado": venta["total_pagado"],
-                            "estado": venta["estado"],
                             "plan_info": {"nombre": plan_info.get("nombre", "Sin plan"),
                                         "precio": plan_info.get("precio", 0),
                                         "fecha_modificacion": plan_info.get("fecha_modificacion", "")},

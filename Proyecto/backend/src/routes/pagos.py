@@ -14,7 +14,7 @@ def create_checkout_session(session_data: CreateCheckoutSession):
     try:
         print(session_data)
         # Verificar si el usuario ya tiene una suscripción activa
-        existing_subscription = conn.alloxentric_db.ventas.find_one({
+        existing_subscription = conn.alloxentric_db.suscripciones.find_one({
             "id_usuario": session_data.id_usuario,  # Asegúrate de pasar el ID del usuario en session_data
             "estado": {"$in": ["active","cancel_at_period_end"]}
         })
@@ -170,8 +170,7 @@ async def record_sale(session_id: str, request: Request):
             "id_plan": id_plan if id_plan else 0,  # id_plan ahora tendrá el valor correcto
             "fecha_venta": datetime.utcnow(),
             "fecha_vencimiento": fecha_vencimiento,
-            "total_pagado": session.amount_total if session.amount_total else 0,
-            "estado": estado  # Estado inicial
+            "total_pagado": session.amount_total if session.amount_total else 0
         }
         suscripcion = {
             "_id": str(ObjectId()),

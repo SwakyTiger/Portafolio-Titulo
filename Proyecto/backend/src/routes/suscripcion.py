@@ -8,6 +8,46 @@ import logging
 
 suscripciones = APIRouter()
 logging.basicConfig(level=logging.INFO)
+
+@suscripciones.get("/suscripciones", tags=["suscripciones"])
+async def obtener_suscripciones():
+    try:
+        # 1. Obtener todas las ventas del usuario
+        suscripciones = list(conn.alloxentric_db.suscripciones.find())
+
+        planes_list = {
+            plan["id_plan"]: plan for plan in conn.alloxentric_db.planes.find({})}
+        usuarios_list = {
+            usuario["id_usuario"]: usuario for usuario in conn.alloxentric_db.usuario.find({})}
+
+        total_clientes = len(set(sucripcion["id_usuario"] for sucripcion in suscripciones))
+
+        response = []
+        for sucripcion in suscripciones:
+            plan_info = planes_list.get(sucripcion["id_plan"], {})
+            usuario_info = usuarios_list.get(sucripcion["id_usuario"], {})
+            response.append({"id_suscripcion": sucripcion["id_suscripcion"],
+                            "id_usuario": sucripcion["id_usuario"], 
+                            "id_plan": sucripcion["id_plan"],
+                            "fecha_venta": sucripcion["fecha_venta"].isoformat(),
+                            "fecha_vencimiento": sucripcion["fecha_vencimiento"].isoformat(),
+                            "total_pagado": sucripcion["total_pagado"],
+                            "estado": sucripcion["estado"],
+                            "plan_info": {"nombre": plan_info.get("nombre", "Sin plan"),
+                                        "precio": plan_info.get("precio", 0),
+                                        "fecha_modificacion": plan_info.get("fecha_modificacion", "")},
+                            "usuario_info": {"username": usuario_info.get("username", "Sin usuario"),
+                                            "nombre": usuario_info.get("nombre", "Sin usuario"),
+                                            "apellido": usuario_info.get("apellido", ""),
+                                            "email": usuario_info.get("email", ""),
+                                            "prefijo": usuario_info.get("prefijo", ""),
+                                            "numero_telefono": usuario_info.get("numero_telefono", 0)}
+            })
+
+        return {"ventas": response, "total_clientes": total_clientes}
+    except Exception as e:
+        logging.error(f"Error obteniendo suscripciones: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error obteniendo las suscripciones")
     
 @suscripciones.get("/suscripciones/{id_usuario}", tags=["suscripciones"])
 async def obtener_suscripciones(id_usuario: str):
@@ -117,8 +157,7 @@ async def actualizar_suscripcion(subscriptionId: str, newPriceId: str):
                 "id_plan": plan_id,
                 "total_pagado": total_pagado,
                 "fecha_venta": datetime.now(),
-                "fecha_vencimiento": fecha_vencimiento,  # Fecha de fin de suscripción
-                "fecha_actualizacion": datetime.now()
+                "fecha_vencimiento": fecha_vencimiento  # Fecha de fin de suscripción
             })
             return {"success": True, "message": "Suscripción actualizada correctamente con cobro inmediato y 3 días de prueba.", "data": updated_subscription}
         else:
