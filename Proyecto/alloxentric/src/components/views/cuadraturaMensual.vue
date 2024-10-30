@@ -173,7 +173,7 @@ export default {
   methods: {
     async fetchVentas() {
       try {
-        const response = await axios.get('http://localhost:8000/ventas');
+        const response = await axios.get('http://localhost:8000/suscripciones');
         this.ventas = response.data.ventas;
         this.totalClientes = response.data.total_clientes;
         this.calculateTotalVenta();

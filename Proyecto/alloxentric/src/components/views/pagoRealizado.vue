@@ -10,7 +10,7 @@
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title class="text-h6">Monto Pagado</v-list-item-title>
-              <v-list-item-subtitle class="text-h4 font-weight-bold">$ {{ price }}</v-list-item-subtitle>
+              <v-list-item-subtitle class="text-h4 font-weight-bold">{{ formatCurrency(price) }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
@@ -102,6 +102,12 @@ export default {
   }
   ,
   methods: {
+    
+    formatCurrency(amount) {
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(amount);
+    },
+
+    
     async recordSale(sessionId) {
       const token = keycloak.token; // Obtén el token de Keycloak
       try {

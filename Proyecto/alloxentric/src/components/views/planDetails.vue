@@ -14,7 +14,7 @@
             </v-card-title>
             
             <v-card-subtitle class="text-h3 text-center pt-2 ">
-              ${{ plan.precio / 100 }} USD
+              {{formatCurrency(plan.precio)}}
             </v-card-subtitle>
           </v-card-item>
           
@@ -62,6 +62,10 @@ export default {
       console.error("Error fetching plans:", error);
     }
   },
+  
+  formatCurrency(amount) {
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(amount);
+    },
 
   // Método para redirigir al resumen de pago
   async realizarPago(plan) {
