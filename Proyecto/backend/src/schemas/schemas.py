@@ -30,6 +30,21 @@ def ventaEntity(item) -> dict:
 def ventasEntity(entity) -> list:
     return [ventaEntity(item) for item in entity]
 
+#ESQUEMA DE SUSCRIPCIONES
+def suscripcionEntity(item) -> dict:
+    return{
+        "id_suscripcion": item["id_suscripcion"],
+        "id_usuario": item["id_usuario"],
+        "id_plan": item["id_plan"],
+        "fecha_venta": item["fecha_venta"],
+        "fecha_vencimiento": item["fecha_vencimiento"],  # Se puede hacer opcional si al crear la venta inicial aún no tienes la fecha
+        "total_pagado": item["total_pagado"],
+        "estado": item["estado"]
+    }
+
+def suscripcionesEntity(entity) -> list:
+    return [suscripcionEntity(item) for item in entity]
+
 #ESQUEMA DE USUARIOS
 def usuarioEntity(item) -> dict:
     return{

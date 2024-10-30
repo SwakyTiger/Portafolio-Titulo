@@ -23,7 +23,7 @@ async def create_plan(plan: Plan):
         
         # Crea el precio en Stripe
         price = stripe.Price.create(
-            unit_amount=int(plan.precio * 100),  # En centavos
+            unit_amount=int(plan.precio),  # En centavos
             currency="usd",  # Cambia esto según sea necesario
             recurring={"interval": "month"},  # Cambia esto según el tipo de plan
             product=product.id,

@@ -20,6 +20,16 @@ class Venta(BaseModel):
     fecha_vencimiento: datetime
     total_pagado: int
     estado: str
+
+
+class Suscripciones(BaseModel):
+    id_suscripcion: str
+    id_usuario: str
+    id_plan: str
+    fecha_venta: datetime
+    fecha_vencimiento: datetime
+    total_pagado: int
+    estado: str
     
 class Usuario(BaseModel):
     id_usuario: str

@@ -1,8 +1,8 @@
 <template>
   <h1 class="resumenpago">Resumen Pago</h1>
   <v-alert v-if="showAlert" type="error" dismissible>
-  El usuario ya tiene una suscripción activa.
-</v-alert>
+  El usuario ya tiene una suscripción activa, porfavor actualice desde el apartado Mi Cuenta.
+  </v-alert>
 
   <v-container>
     <v-row justify="center" class="row">

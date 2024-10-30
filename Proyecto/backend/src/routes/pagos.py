@@ -169,6 +169,16 @@ async def record_sale(session_id: str, request: Request):
             "id_usuario": id_usuario if id_usuario else "No disponible",
             "id_plan": id_plan if id_plan else 0,  # id_plan ahora tendrá el valor correcto
             "fecha_venta": datetime.utcnow(),
+            "fecha_vencimiento": fecha_vencimiento,
+            "total_pagado": session.amount_total if session.amount_total else 0,
+            "estado": estado  # Estado inicial
+        }
+        suscripcion = {
+            "_id": str(ObjectId()),
+            "id_suscripcion": suscripcion_id,  # ID de la suscripción
+            "id_usuario": id_usuario if id_usuario else "No disponible",
+            "id_plan": id_plan if id_plan else 0,  # id_plan ahora tendrá el valor correcto
+            "fecha_venta": datetime.utcnow(),
             "fecha_vencimiento": fecha_vencimiento,  # Registrar la fecha de vencimiento
             "total_pagado": session.amount_total if session.amount_total else 0,
             "estado": estado  # Estado inicial
@@ -177,8 +187,8 @@ async def record_sale(session_id: str, request: Request):
 
         # Insertar la venta en MongoDB
         conn.alloxentric_db.ventas.insert_one(venta)
+        conn.alloxentric_db.suscripciones.insert_one(suscripcion)
 
-        return {"message": "Venta registrada exitosamente", "venta": venta}
 
     except stripe.error.StripeError as e:
         logging.error(f"Stripe error: {str(e)}")
