@@ -14,7 +14,7 @@
             </v-card-title>
             
             <v-card-subtitle class="text-h3 text-center pt-2 ">
-              {{formatCurrency(plan.precio)}}
+              {{formatCurrency(plan.precio / 100)}}
             </v-card-subtitle>
           </v-card-item>
           

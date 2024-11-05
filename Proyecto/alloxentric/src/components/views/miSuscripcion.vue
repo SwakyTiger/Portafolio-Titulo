@@ -53,6 +53,11 @@
                 Total Pagado: ${{ subscription.total_pagado / 100 }} USD
               </v-card-text>
             </v-card-item>
+            <v-card-text v-if="subscription">
+              <v-list density="compact" class="text-h5 text-center pt-2 ">
+                <v-list-item>Fecha Vencimiento: {{ formatDate(subscription.fecha_vencimiento) }}</v-list-item>
+              </v-list>
+            </v-card-text>
 
             <v-card-text v-if="subscription">
               <v-list density="compact" class="text-h5 text-center pt-2 ">
@@ -152,8 +157,13 @@ methods: {
     this.selectedPlan = null; // Reset la selección cuando se abre el diálogo
     this.fetchAvailablePlans();
     this.isPlanDialogOpen = true;
+    this.showAlert = false;
     console.log(this.availablePlans.stripe_price_id)
     
+  },
+  formatDate(dateString) {
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+      return new Date(dateString).toLocaleDateString('es-ES', options);
   },
   async fetchAvailablePlans() {
     try {
@@ -167,9 +177,7 @@ methods: {
       // Filtrar los planes para que solo se muestren los que tienen un precio mayor al plan actual
       this.availablePlans = response.data.filter(plan => plan.precio > this.subscription.total_pagado);
 
-      if (this.availablePlans.length === 0) {
-        this.showAlert = true;
-      }
+      this.showAlert = this.availablePlans.length === 0;
     } catch (error) {
       console.error("Error al obtener planes:", error);
     }
@@ -223,6 +231,7 @@ try {
   });
   if (response.data) {
         this.isPlanDialogOpen = false;
+        window.location.reload();
       }
   else {
     this.showAlert = true;

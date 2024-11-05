@@ -11,7 +11,7 @@
           <v-card-text>
             <v-row>
               <v-col class="d-flex flex-column justify-center align-center text-center">
-                <p class="text-h3 font-weight-bold"> El monto a pagar es: {{ formatCurrency(plan.precio)}} </p>
+                <p class="text-h3 font-weight-bold"> El monto a pagar es: {{ formatCurrency(plan.precio / 100)}} </p>
                 <p><strong>Tipo de Plan:</strong> {{ plan.nombre }}</p>
                 <p><strong>Nombre de usuario:</strong> {{ usuario.nombre }}</p>
                 <p><strong>Número de Teléfono:</strong> {{ usuario.telefono }}</p>

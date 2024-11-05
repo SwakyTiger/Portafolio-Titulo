@@ -56,7 +56,7 @@
                   {{ formatDate(item.fecha_vencimiento) }}
                 </template>
                 <template v-slot:[`item.total_pagado`]="{ item }">
-                  {{ formatCurrency(item.total_pagado) }}
+                  {{ formatCurrency(item.total_pagado / 100) }}
                 </template>
                 <template v-slot:[`item.estado`]="{ item }">
                   <v-chip :color="getStatusColor(item.estado)" text-color="white" small>

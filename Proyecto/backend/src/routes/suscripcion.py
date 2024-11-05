@@ -129,7 +129,7 @@ async def actualizar_suscripcion(subscriptionId: str, newPriceId: str):
             proration_behavior='create_prorations'  # Prorrateo para ajustar el precio
         )
 
-        # Actualizar la base de datos con el nuevo plan y estado
+        fecha_vencimiento = datetime.fromtimestamp(updated_subscription['current_period_end'])
         nuevo_estado = updated_subscription['status']
         
         result = conn.alloxentric_db.suscripciones.update_one(
@@ -138,12 +138,12 @@ async def actualizar_suscripcion(subscriptionId: str, newPriceId: str):
                 "id_plan": plan_id,
                 "estado": nuevo_estado,
                 "total_pagado": total_pagado,
-                "fecha_actualizacion": datetime.now()
+                "fecha_actualizacion": datetime.now(),
+                "fecha_vencimiento": fecha_vencimiento
             }}
         )
 
         if result.modified_count == 1:
-            fecha_vencimiento = datetime.fromtimestamp(updated_subscription['current_period_end'])
             # Obtener el id_usuario de la colección suscripciones
             subscription_data = conn.alloxentric_db.suscripciones.find_one({"id_suscripcion": subscriptionId})
             if not subscription_data:
