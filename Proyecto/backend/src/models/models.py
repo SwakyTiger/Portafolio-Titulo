@@ -8,7 +8,7 @@ class Plan(BaseModel):
     nombre: str
     precio: float
     descripcion: str
-    total_segundos: int
+    creditos: int
     stripe_product_id: str = None  # ID del producto en Stripe
     stripe_price_id: str = None  # ID del precio en Stripe
 

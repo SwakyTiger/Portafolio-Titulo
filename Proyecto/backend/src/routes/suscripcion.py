@@ -100,25 +100,54 @@ async def cancelar_suscripcion(id_suscripcion: str):
 @suscripciones.post("/actualizar_suscripcion/{subscriptionId}/{newPriceId}", tags=["suscripciones"])
 async def actualizar_suscripcion(subscriptionId: str, newPriceId: str):
     try:
-        # Obtener el plan actual y precio para validaciones
+        # Obtener el plan nuevo y la cantidad de créditos asociados
         plan = conn.alloxentric_db.planes.find_one({"stripe_price_id": newPriceId})
         if not plan:
             raise HTTPException(status_code=404, detail="Plan no encontrado")
         
         plan_id = plan.get("id_plan")
         total_pagado = plan.get("precio")
-        
-        # Recuperar la suscripción desde Stripe
+        creditos_nuevos = plan.get("creditos", 0)  # Créditos adicionales del nuevo plan
+
+        # Recuperar la suscripción actual desde Stripe
         subscription = stripe.Subscription.retrieve(subscriptionId)
         
-        # Asegurarse de que la suscripción tenga items
+        # Verificar que la suscripción tenga elementos
         if not subscription.get("items") or not subscription["items"]["data"]:
             raise HTTPException(status_code=400, detail="No se encontraron elementos en la suscripción.")
         
         # Obtener el ID del item actual de la suscripción
         subscription_item_id = subscription['items']['data'][0]['id']
 
-        # Realizar el cobro inmediatamente y otorgar prorrateo para simular los 3 días de prueba
+        # Calcular días usados y créditos consumidos en el plan actual
+        fecha_inicio_unix = subscription['current_period_start']
+        fecha_fin_unix = subscription['current_period_end']
+        fecha_inicio = datetime.fromtimestamp(fecha_inicio_unix)
+        fecha_fin = datetime.fromtimestamp(fecha_fin_unix)
+        
+        dias_totales = (fecha_fin - fecha_inicio).days
+        dias_utilizados = (datetime.now() - fecha_inicio).days
+        if dias_utilizados > dias_totales:
+            dias_utilizados = dias_totales  # Evitar días negativos si la suscripción ya expiró
+        print(f"Los dias totales son: {dias_totales} y los dias utilizados son: {dias_utilizados}")
+        # Obtener los créditos del plan actual de la base de datos
+        suscripcion_actual = conn.alloxentric_db.suscripciones.find_one({"id_suscripcion": subscriptionId})
+        if not suscripcion_actual:
+            raise HTTPException(status_code=404, detail="Suscripción no encontrada en la base de datos.")
+        
+        creditos_actuales = suscripcion_actual.get("creditos", 0)
+        plan_actual_id = suscripcion_actual.get("id_plan")
+        plan_actual = conn.alloxentric_db.planes.find_one({"id_plan": plan_actual_id})
+        creditos_plan_actual = plan_actual.get("creditos", 0) if plan_actual else 0
+
+        # Calcular los créditos consumidos en base a los días utilizados
+        creditos_consumidos = int((dias_utilizados / dias_totales) * creditos_plan_actual)
+        creditos_restantes = max(0, creditos_actuales - creditos_consumidos)  # Asegurarse de que no sea negativo
+        print(f"Los creditos consumidos son: {creditos_consumidos} y los creditos restantes son: {creditos_restantes}")
+        # Sumar los créditos del nuevo plan a los créditos restantes
+        creditos_totales = creditos_restantes + creditos_nuevos
+        print(f"Los creditos totales son: {creditos_totales}")
+        # Actualizar los datos de la suscripción en la base de datos, incluyendo los créditos totales
         updated_subscription = stripe.Subscription.modify(
             subscriptionId,
             items=[{
@@ -131,7 +160,7 @@ async def actualizar_suscripcion(subscriptionId: str, newPriceId: str):
 
         fecha_vencimiento = datetime.fromtimestamp(updated_subscription['current_period_end'])
         nuevo_estado = updated_subscription['status']
-        
+
         result = conn.alloxentric_db.suscripciones.update_one(
             {"id_suscripcion": subscriptionId},
             {"$set": {
@@ -139,27 +168,28 @@ async def actualizar_suscripcion(subscriptionId: str, newPriceId: str):
                 "estado": nuevo_estado,
                 "total_pagado": total_pagado,
                 "fecha_actualizacion": datetime.now(),
-                "fecha_vencimiento": fecha_vencimiento
+                "fecha_vencimiento": fecha_vencimiento,
+                "creditos": creditos_totales  # Actualizar con los créditos acumulados
             }}
         )
 
         if result.modified_count == 1:
-            # Obtener el id_usuario de la colección suscripciones
-            subscription_data = conn.alloxentric_db.suscripciones.find_one({"id_suscripcion": subscriptionId})
-            if not subscription_data:
-                raise HTTPException(status_code=404, detail="Suscripción no encontrada para obtener el id_usuario.")
+            # Obtener el id_usuario de la suscripción
+            id_usuario = suscripcion_actual.get("id_usuario")
+            if not id_usuario:
+                raise HTTPException(status_code=404, detail="No se encontró el id_usuario en la suscripción.")
             
-            id_usuario = subscription_data.get("id_usuario")
-            # Insertar un nuevo registro en la colección ventas para guardar el historial de actualización de la suscripción
+            # Insertar un nuevo registro en la colección ventas para el historial
             conn.alloxentric_db.ventas.insert_one({
                 "id_suscripcion": subscriptionId,
                 "id_usuario": id_usuario,
                 "id_plan": plan_id,
                 "total_pagado": total_pagado,
                 "fecha_venta": datetime.now(),
-                "fecha_vencimiento": fecha_vencimiento  # Fecha de fin de suscripción
+                "fecha_vencimiento": fecha_vencimiento
             })
-            return {"success": True, "message": "Suscripción actualizada correctamente con cobro inmediato y 3 días de prueba.", "data": updated_subscription}
+
+            return {"success": True, "message": "Suscripción actualizada correctamente con créditos ajustados.", "data": updated_subscription}
         else:
             raise HTTPException(status_code=404, detail="No se encontró la suscripción para actualizar en la base de datos")
 

@@ -12,7 +12,7 @@
         class="custom-table"
       >
         <template v-slot:[`item.precio`]="{ item }">
-          <span>{{ formatCurrency(item.precio) }}</span>
+          <span>{{ formatCurrency(item.precio / 100) }}</span>
         </template>
         <template v-slot:[`item.edit`]="{ item }">
           <v-btn @click="showEdit(item)" outlined color="red">
@@ -61,8 +61,8 @@
               required
             ></v-text-field>
             <v-text-field
-              v-model="newPlan.total_segundos"
-              label="Total_segundos"
+              v-model="newPlan.creditos"
+              label="Creditos"
               type="float"
               step="0.01"
             ></v-text-field>
@@ -109,7 +109,7 @@
               required
             ></v-text-field>
             <v-text-field
-              v-model="selectedPlan.total_segundos"
+              v-model="selectedPlan.creditos"
               label="Total Segundos"
               type="number"
               step="0.01"
@@ -144,7 +144,7 @@ export default {
         {title: 'Fecha de Modificacion', value: 'fecha_modificacion'},
         { title: 'Nombre del Plan', value: 'nombre' },
         { title: 'Precio', value: 'precio' },
-        { title: 'Total Segundos', value: 'total_segundos' },
+        { title: 'Creditos', value: 'creditos' },
         { title: 'Acciones', value: 'edit', sortable: false }
       ],
       page: 1,
@@ -155,7 +155,7 @@ export default {
         codigo: '',
         plan: '',
         precio: 0,
-        total_segundos: 0,
+        creditos: 0,
       }
     };
   },
@@ -176,7 +176,7 @@ export default {
       this.dialog = true;
     },
     openCreateDialog() {
-      this.newPlan = { codigo: "", plan: "", precio: 0, total_segundos: 0 }; // Resetea el formulario
+      this.newPlan = { codigo: "", plan: "", precio: 0, creditos: 0 }; // Resetea el formulario
       this.createDialog = true;
     },
 
@@ -212,7 +212,7 @@ export default {
       nombre: this.newPlan.nombre,
       precio: this.newPlan.precio,
       descripcion: this.newPlan.descripcion,
-      total_segundos: this.newPlan.total_segundos,
+      creditos: this.newPlan.creditos,
       fecha_modificacion: this.newPlan.fecha_modificacion = now.toLocaleString("es-ES", {
           day: "2-digit",
           month: "2-digit",

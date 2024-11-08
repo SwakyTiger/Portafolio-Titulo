@@ -93,15 +93,22 @@ async def get_payment_details(session_id: str):
         logging.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-def obtener_id_plan(plan_name: str) -> str:
+def obtener_detalles_plan(plan_name: str) -> dict:
+    """
+    Función que obtiene el id y los créditos de un plan dado su nombre.
+    """
     logging.info(f"Buscando el plan con nombre: {plan_name}")
     plan = conn.alloxentric_db.planes.find_one({"nombre": plan_name})
     if plan:
         logging.info(f"Plan encontrado: {plan}")
-        return str(plan["id_plan"])
+        return {
+            "id_plan": str(plan["id_plan"]),
+            "creditos": plan.get("creditos", 0)  # Obtiene los créditos del plan, por defecto 0
+        }
     else:
         logging.warning(f"No se encontró el plan con nombre: {plan_name}")
         return None
+
     
 # Ruta para registrar la venta
 @pagos.post("/record-sale", tags=["pagos"])
@@ -142,14 +149,17 @@ async def record_sale(session_id: str, request: Request):
         plan_name = line_items.data[0].description
         logging.info(f"Nombre del plan obtenido desde Stripe: {plan_name}")
 
-        # Obtener id del plan a partir del nombre del plan
-        logging.info(f"Buscando id del plan para: {plan_name}")
-        id_plan = obtener_id_plan(plan_name)  # Usar await aquí para obtener el valor de retorno
-        if not id_plan:
-            logging.error(f"No se encontró id del plan para el nombre: {plan_name}")
-            raise HTTPException(status_code=404, detail=f"No se encontró id del plan para el nombre proporcionado: {plan_name}")
-        logging.info(f"ID del plan encontrado: {id_plan}")
-
+        # Obtener id y créditos del plan
+        logging.info(f"Buscando detalles del plan para: {plan_name}")
+        plan_details = obtener_detalles_plan(plan_name)
+        if not plan_details:
+            logging.error(f"No se encontró detalles del plan para el nombre: {plan_name}")
+            raise HTTPException(status_code=404, detail=f"No se encontró detalles del plan para el nombre proporcionado: {plan_name}")
+        
+        id_plan = plan_details["id_plan"]
+        creditos = plan_details["creditos"]
+        logging.info(f"ID del plan encontrado: {id_plan}, Créditos: {creditos}")
+        
         # Obtener el ID de la suscripción desde la sesión
         if hasattr(session, 'subscription'):
             suscripcion_id = session.subscription  # Asumir que session.subscription tiene el ID de la suscripción
@@ -180,6 +190,7 @@ async def record_sale(session_id: str, request: Request):
             "fecha_venta": datetime.utcnow(),
             "fecha_vencimiento": fecha_vencimiento,  # Registrar la fecha de vencimiento
             "total_pagado": session.amount_total if session.amount_total else 0,
+            "creditos": creditos,
             "estado": estado  # Estado inicial
         }
         logging.info(f"Datos de venta a insertar: {venta}")

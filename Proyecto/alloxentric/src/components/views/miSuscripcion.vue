@@ -61,6 +61,12 @@
 
             <v-card-text v-if="subscription">
               <v-list density="compact" class="text-h5 text-center pt-2 ">
+                <v-list-item>Creditos Actuales: {{ (subscription.creditos) }}</v-list-item>
+              </v-list>
+            </v-card-text>
+
+            <v-card-text v-if="subscription">
+              <v-list density="compact" class="text-h5 text-center pt-2 ">
                 <v-list-item>Estado: {{ getStatusText(subscription.estado) }}</v-list-item>
               </v-list>
             </v-card-text>

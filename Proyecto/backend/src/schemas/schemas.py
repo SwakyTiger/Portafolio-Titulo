@@ -6,7 +6,7 @@ def planEntity(item) -> dict:
         "nombre": item["nombre"],
         "precio": item["precio"],
         "descripcion": item["descripcion"],
-        "total_segundos": item["total_segundos"],
+        "creditos": item["creditos"],
         "stripe_product_id": item["stripe_product_id"],
         "stripe_price_id": item["stripe_price_id"]
 
