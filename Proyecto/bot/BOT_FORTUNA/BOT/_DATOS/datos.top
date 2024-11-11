@@ -5,27 +5,23 @@ outputmacro: ^myfunc1(^resp)
 
 topic: ~datos keep repeat ()
 
-u: (\[ _*1 \])  $$data_obb = ^jsonparse(transient NOFAIL  _0 )
+#u: (\[ _*1 \])  $$data_obb = ^jsonparse(transient NOFAIL  _0 )
 
-u: (!$obbdatos)
-$obbdatos=1 
-$_endpoint = ^"http://host.docker.internal:8000/usuarios"# este deberia funcionar fuera de docker en caso de problemas http://localhost:8000/usuarios
+u: ()
+$_endpoint = ^"http://host.docker.internal:8000/bot"  # o http://localhost:8000/usuarios en caso de problemas
+$numero_telefono = 987989930
+$_url = ^join($_endpoint / $numero_telefono)
+$_header = ^" ~Accept: application/json ~Content-Type: application/json "
+$$datae = ^jsonopen(direct GET $_url "" "")
+$$data = ^jsonparse(transient NOFAIL $$datae)
+$username = $$data.usuario.username
+$$nombre = $$data.usuario.nombre
+$id_usuario = $$data.usuario.id_usuario
 
-$_username = "jon.doe" #$$data_obb.username
-$_url = ^join($_endpoint ? username = $_username)
-$obbdatos=2 
-    $_header = ^" ~Accept: application/json ~Content-Type: application/json "
-$obbdatos=3
-$obbdatos = $_url
-$obbdatos = $_header
-$$datae = ^jsonopen(direct GET $_url "" $_header)
-$obbdatos=8
-$$data = ^jsonparse(transient NOFAIL $$datae )
-$obbdatos=4 
-$$data = $$data[0]
-$$nombre = $$data.nombre
-$$numero_telefono = $$data.numero_telefono
-$obbdatos= $$data
+# Acceder a la primera suscripción
+$id_plan = $$data.suscripciones.id_plan
+$estado_plan = $$data.suscripciones.estado
+
 	$$data = ^jsonopen(direct GET $_url "" $_header)
 	$$data = ^jsonparse(transient NOFAIL $$data )
 

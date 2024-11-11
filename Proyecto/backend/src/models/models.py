@@ -30,6 +30,7 @@ class Suscripciones(BaseModel):
     fecha_vencimiento: datetime
     total_pagado: int
     estado: str
+    creditos: int
     
 class Usuario(BaseModel):
     id_usuario: str

@@ -1,0 +1,41 @@
+topic: ~transcribirAudio keep repeat ()
+
+t: ()
+    "Transcriptor Alloxentric" $br
+    
+
+u: ()  # Captura cualquier otra entrada que no sea el comando específico  
+    Ud tiene un total de $creditos creditos en su cuenta de transcripción. $brexi
+    "Por favor, envía el archivo de audio que deseas transcribir." $br
+
+a: (_*)
+    $audioFile = '_0
+    Recibido el archivo de audio: $audioFile  # Mensaje de confirmación
+
+    # Llamar al endpoint de transcripción
+    $_endpoint = ^"http://host.docker.internal:8000/transcribir-audio-2/"
+    $_url = ^join($_endpoint ? audio_url = $audioFile)
+    $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+
+    # Aquí debes enviar el archivo de audio al endpoint
+    $$response = ^jsonopen(direct POST $_url "" $_header)
+    $$data = ^jsonparse(transient NOFAIL $$response)
+
+    # Procesar la respuesta
+    $transcripcion = $$data.transcripcion
+    
+    La transcripción del audio es: $transcripcion
+
+    $_endpoint = ^"http://host.docker.internal:8000/restar-creditos"
+    $_url = ^join($_endpoint / $numero_telefono)
+    $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+    $$data = ^jsonopen(direct PUT $_url "" $_header)
+
+
+    $_endpoint = ^"http://host.docker.internal:8000/guardar-transcrito"
+    $_url = ^join($_endpoint ? id_usuario = $id_usuario & usuario = $username & numero_telefono = $numero_telefono & transcrito = $transcripcion)
+    $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+    $$data = ^jsonopen(direct POST $_url "" $_header)
+
+    $estado = ~algo_mas 
+

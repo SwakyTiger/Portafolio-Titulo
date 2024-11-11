@@ -15,10 +15,3 @@ RUN unzip 11.5.zip && mv ChatScript-11.5/* . && rm -rf ChatScript-11.5 11.5.zip
 WORKDIR /opt/alloxentric/
 RUN chmod +x /opt/alloxentric/ChatScript/BINARIES/LinuxChatScript64
 
-# Copiar el script de entrada
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
-# Establecer el punto de entrada
-ENTRYPOINT ["/docker-entrypoint.sh"]
-

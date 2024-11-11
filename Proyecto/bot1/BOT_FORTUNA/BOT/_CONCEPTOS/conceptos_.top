@@ -1,0 +1,24 @@
+﻿# ========= CONCEPTOS CON SINONIMOS =================
+
+
+concept: ~sic ( yes si sí sí_sí sí_sí_sí si_si si_si_si yes si sí sí_sí sí_sí_sí si_si si_si_si sisi silla C claro por_supuesto así asi cicones ci cic prezi siri zi zic fitness se_habla ya_pague y ya_lo_pague ya_lo_cancele ya_pague_ayer zi psi P correcto ya_esta_pagado che chi te ti claro y_digame el_habla el_aula con_el con_ella yi jeans alo_si_alo alo_si y_si y_por_favor y_ella_habla y_con_ella el_mismo acidez izzi yzzy izzy yzzi e G exacto y_el_habla el_habla pi si_con_el sii siii cec sic sec sí_con_el Si Si_con_el Sí_con_el e che y sip sipi shi zip cipi yep chi_chi shi_shi iep a_si a_sí ah_si ah_sí zhi ser si_en_si cierto sisi cici )
+
+concept: ~noc (no no_no no_no_no nop no_se nono no_sabia no_conozco no_lo_conozco no_la_conozco no_pe )
+
+concept: ~afirmativo( correcto bueno_ya bueno así_es asi_es efectivo si si_si sí sí_sí ok okey efectivamente correctamente es_correcto afirmativo )
+
+concept: ~soy_yo ( ese_soy_yo soy_yo yo_soy el_mismo con_ella con_ellas con_él con_el el_mismo él_mismo)
+
+concept: ~digame ( digame cuénteme qué_pasa qué_pasó ahora_que_pasó ahorita_que_pasó digame_que )
+
+concept: ~conocido( esposo esposa hermano hermana primo prima compañero compañera marido hijo hija vecino vecina nana amigo amiga tio tia tío tía mama mamá papá papa madre padre pareja mujer)
+
+concept: ~operadora( señor señorita señora corazon corazón)
+
+concept: ~actividad_ocupado ( trabajando comprando bañandose en_el_baño durmiendo viajando ocupado ocupada )
+
+concept: ~buzonc ( buzon grabacion marque marke maxima tono despues_del duracion_maxima tu_mensaje alcanzo_el_limite alcanzado_la tiempo_de volver_a_grabar ayuda_marque deja_tu_mensaje presiona esta_conduciendo_en_estos_momentos alcanzo mark market para_pedir favor_deje_su_mensaje hacer_una_pausa comunidad_de_amara para_opciones suscr bete su_mensaje para_hacer para_evitar grabado ha_sido_grabado hacer_una que_siate_para_pedir_ayuda mensaje )
+
+concept: ~unoc( "1" uno )
+concept: ~dosc( "2" dos )
+concept: ~tresc( "3" tres tre treh )
