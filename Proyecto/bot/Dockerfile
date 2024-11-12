@@ -12,6 +12,6 @@ WORKDIR /opt/alloxentric/ChatScript/
 RUN curl -LO https://github.com/ChatScript/ChatScript/archive/11.5.zip
 RUN unzip 11.5.zip && mv ChatScript-11.5/* . && rm -rf ChatScript-11.5 11.5.zip
 
-WORKDIR /opt/alloxentric/
+WORKDIR /opt/alloxentric/ChatScript/
 RUN chmod +x /opt/alloxentric/ChatScript/BINARIES/LinuxChatScript64
 

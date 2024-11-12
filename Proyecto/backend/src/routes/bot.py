@@ -1,13 +1,26 @@
 from fastapi import APIRouter, HTTPException, File, UploadFile,  Query
 from src.config.db import conn
 from ..schemas.schemas import usuariosEntity
-import os
+
 import subprocess
 import requests
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+
+load_dotenv(dotenv_path='src/routes/.env') # Cargar el archivo .env
+
+# Verificar el valor de GROQ_TOKEN
+groq_token = os.getenv('GROQ_TOKEN')
+
+if groq_token is None:
+    raise HTTPException(status_code=500, detail="GROQ_TOKEN no está configurado.")
 
 bot = APIRouter()
 usuarios_collection = conn.alloxentric_db.usuario
+
+# Cargar las variables de entorno desde el archivo .env
+load_dotenv()
 
 @bot.get('/bot', tags=["bot"])
 def find_all_usuarios():
@@ -52,11 +65,13 @@ def find_usuario(numero_telefono: int):
         "suscripciones": suscripciones_info
     }
 
+
+
 @bot.post("/transcribir-audio-2/", tags=["bot"])
-async def transcribir_audio(audio_url: str):  # Acepta audio_url como un parámetro de consulta
+async def transcribir_audio(audio_url: str):
     os.makedirs('temp', exist_ok=True)
     
-    file_location = "temp/audio_url.wav"  # Puedes cambiar el nombre según sea necesario
+    file_location = "temp/audio_url.wav"
     
     try:
         # Descargar el archivo de audio desde la URL
@@ -67,6 +82,13 @@ async def transcribir_audio(audio_url: str):  # Acepta audio_url como un paráme
         with open(file_location, "wb") as f:
             f.write(response.content)
 
+        # Verificar que el archivo no esté vacío
+        if os.path.getsize(file_location) == 0:
+            raise HTTPException(status_code=500, detail="El archivo de audio está vacío.")
+        
+        # Establecer la variable de entorno para el script de Node.js
+        os.environ['GROQ_TOKEN'] = os.getenv('GROQ_TOKEN')
+
         # Llama al script de JavaScript para transcribir el audio
         result = subprocess.run(['node', 'transcripcion/transcribir.js', file_location], capture_output=True, text=True)
 
@@ -74,13 +96,12 @@ async def transcribir_audio(audio_url: str):  # Acepta audio_url como un paráme
         transcripcion = result.stdout.strip()
         
         if result.returncode != 0:
-            raise HTTPException(status_code=500, detail="Error al ejecutar el script de transcripción")
+            raise HTTPException(status_code=500, detail=f"Error al ejecutar el script de transcripción: {result.stderr.strip()}")
 
         return {"transcripcion": transcripcion}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 @bot.post("/transcribir-audio/", tags=["bot"])

@@ -1,9 +1,19 @@
 import fs from 'fs';
 import Groq from 'groq-sdk';
+import dotenv from 'dotenv';
 
-const groq = new Groq({
-    apiKey: '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',
-});
+// Cargar las variables de entorno desde el archivo .env
+dotenv.config();
+
+const apigroq = process.env.GROQ_TOKEN;
+
+
+if (!apigroq) {
+    console.error("GROQ_TOKEN no está configurado.");
+    process.exit(1);
+}
+
+const groq = new Groq({ apiKey: apigroq });
 
 // Función para transcribir un archivo de audio
 async function transcribirAudio(rutaArchivo) {
@@ -18,7 +28,7 @@ async function transcribirAudio(rutaArchivo) {
         });
         return transcription.text; // Retornar la transcripción
     } catch (error) {
-        console.error('Error al transcribir el archivo:', error);
+        console.error('Error al transcribir el archivo:', error.response ? error.response.data : error.message);
         process.exit(1); // Salir con un código de error
     }
 }
