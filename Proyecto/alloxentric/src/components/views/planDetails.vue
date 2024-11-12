@@ -17,8 +17,11 @@
               {{formatCurrency(plan.precio / 100)}}
             </v-card-subtitle>
           </v-card-item>
-          
+
           <v-card-text>
+            <v-list density="compact" class="text-h5 text-center pt-2">
+              <v-list-item >Cantidad de Creditos: {{ plan.creditos }}</v-list-item>
+            </v-list>
             <v-list density="compact" class="bg-transparent">
               <v-list-item >{{ plan.descripcion }}</v-list-item>
             </v-list>

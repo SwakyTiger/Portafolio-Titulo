@@ -3,6 +3,7 @@ from src.config.db import conn
 from ..schemas.schemas import planEntity, plansEntity
 from ..models.models import Plan
 from starlette.status import HTTP_204_NO_CONTENT
+from datetime import datetime
 import stripe
 
 
@@ -50,18 +51,46 @@ async def create_plan(plan: Plan):
 def find_plan(id_plan: str ):
     return planEntity(conn.alloxentric_db.planes.find_one({"id_plan": id_plan}))
 
-@plans.post('/plans/{id}', response_model=Plan, tags=["plans"])
-def update_plan(id: str, plan: Plan):
+@plans.post('/plans/{id_plan}', tags=["plans"])
+def update_plan(id_plan: str, plan: Plan):
+    try:
+        # Actualiza el producto en Stripe (nombre y descripción)
+        stripe.Product.modify(
+            plan.stripe_product_id,
+            name=plan.nombre,
+            description=plan.descripcion,
+        )
+
+        # Crea un nuevo precio en Stripe
+        new_price = stripe.Price.create(
+            product=plan.stripe_product_id,
+            unit_amount=int(plan.precio),  # Stripe espera el monto en centavos
+            currency="usd",
+        )
+
+        # Actualizar el stripe_price_id en el plan con el nuevo precio
+        plan.stripe_price_id = new_price['id']
+
+    except stripe.error.StripeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error al actualizar el plan en Stripe: {e.user_message}"
+        )
+
+    # Actualizar el plan en MongoDB
+    plan.fecha_modificacion = datetime.now().isoformat()  # Actualiza la fecha de modificación
     result = conn.alloxentric_db.planes.find_one_and_update(
-        {"id_plan": id},
+        {"id_plan": id_plan},
         {"$set": dict(plan)},
         return_document=True
     )
+
     if result is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"El plan con id {id} no existe."
+            detail=f"El plan con id {id_plan} no existe."
         )
+
     return planEntity(result)
 
 

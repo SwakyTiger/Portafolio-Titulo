@@ -30,7 +30,7 @@
                 to="/historyTranscriptor"
               ></v-list-item>
               <v-list-item 
-              prepend-icon="mdi-forum" 
+              prepend-icon="mdi mdi-credit-card" 
               title="Mis Suscripciones" 
               value="about"
               to="/miSuscripcion"

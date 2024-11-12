@@ -23,7 +23,7 @@
           <span>{{ item.plan_info.nombre || 'N/A' }}</span>
         </template>
         <template v-slot:[`item.total_pagado`]="{ item }">
-          <span>{{  formatCurrency(item.total_pagado) }}</span>
+          <span>{{  formatCurrency(item.total_pagado / 100) }}</span>
         </template>
         <template v-slot:[`item.details`]="{ item }">
           <v-btn @click="showDetails(item)" outlined>
@@ -38,7 +38,7 @@
 
     <div class="titulo-total-container">
       <div class="titulo-total">
-        <h1>Total de ventas: {{ formatCurrency(venta) }}</h1>
+        <h1>Total de ventas: {{ formatCurrency(venta / 100) }}</h1>
       </div>
       <div class="botones-reportes">
         <v-btn @click="generatePDF">Generar Reporte de la Tabla</v-btn>
@@ -68,7 +68,7 @@
               <v-expansion-panel-content class="detalles">
                 <h4>Detalles de Compra</h4>
                 <p>- Tipo de plan: {{ selectedVenta.plan_info.nombre }}</p>
-                <p>- Precio: {{ formatCurrency(selectedVenta.total_pagado) }}</p>
+                <p>- Precio: {{ formatCurrency(selectedVenta.total_pagado / 100) }}</p>
                 <p>- Fecha de Venta: {{ formatDate(selectedVenta.fecha_venta) }}</p>
               </v-expansion-panel-content>
             </v-expansion-panel>

@@ -29,8 +29,12 @@
                 value="about"
                 to="/historyTranscriptor"
               ></v-list-item>
-              <v-list-item prepend-icon="mdi-forum" title="Mis Suscripciones" value="about"
-                              to="/miSuscripcion"></v-list-item>
+              <v-list-item 
+                prepend-icon="mdi mdi-credit-card" 
+                title="Mis Suscripciones" 
+                value="about"
+                to="/miSuscripcion"
+              ></v-list-item>
               <v-list-item
                 prepend-icon="mdi-logout"
                 :title="isAuthenticated ? 'Cerrar Sesión' : ''"
