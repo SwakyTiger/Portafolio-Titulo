@@ -12,6 +12,7 @@ import miCuenta from '@/components/views/miCuenta.vue'
 import home from '@/components/views/Home.vue'
 import editarInfoUser from '@/components/views/editarInfoUser.vue'
 import miSuscripcion from '@/components/views/miSuscripcion.vue'
+import transcriptorWeb from '@/components/views/transcriptorWeb.vue'
 import keycloak from '@/keycloak';
 
 const routes = [
@@ -86,6 +87,11 @@ const routes = [
     path: '/miSuscripcion',
     name: 'miSuscripcion',
     component: miSuscripcion
+  },
+  {
+    path: '/transcriptorWeb',
+    name: 'transcriptorWeb',
+    component: transcriptorWeb
   }
 ]
 

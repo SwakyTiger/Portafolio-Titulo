@@ -191,9 +191,11 @@ export default {
           minute: "2-digit",
           second: "2-digit",
         });
+    console.log("Datos del plan antes de enviar:", this.selectedPlan);
+
 
     // Envía la solicitud PUT al backend
-    await axios.put(
+    await axios.post(
       `http://localhost:8000/plans/${this.selectedPlan.id_plan}`,
       this.selectedPlan
     );
@@ -202,7 +204,9 @@ export default {
     this.fetchPlanes(); // Recarga la lista de planes
   } catch (error) {
     console.error("Error updating Plan:", error);
+    console.log("Detalles del error:", error.response?.data);
   }
+
   },
   async savePlan() {
   try {
@@ -222,7 +226,6 @@ export default {
           second: "2-digit",
         }),  // Formato ISO 8601
     };
-
     await axios.post("http://localhost:8000/plans", planData);
 
     this.createDialog = false;

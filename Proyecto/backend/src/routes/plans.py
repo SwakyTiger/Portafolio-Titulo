@@ -50,10 +50,10 @@ async def create_plan(plan: Plan):
 def find_plan(id_plan: str ):
     return planEntity(conn.alloxentric_db.planes.find_one({"id_plan": id_plan}))
 
-@plans.put('/plans/{id}', response_model=Plan, tags=["plans"])
-def update_plan(id_plan: str, plan: Plan):
+@plans.post('/plans/{id}', response_model=Plan, tags=["plans"])
+def update_plan(id: str, plan: Plan):
     result = conn.alloxentric_db.planes.find_one_and_update(
-        {"id_plan": id_plan},
+        {"id_plan": id},
         {"$set": dict(plan)},
         return_document=True
     )
