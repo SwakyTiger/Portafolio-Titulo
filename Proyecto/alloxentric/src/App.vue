@@ -20,6 +20,7 @@
           <v-btn v-if="!isAuthenticated" text @click="handleAuthAction" id="authButton" color="#42b983">
             Iniciar Sesión
           </v-btn>
+          <v-btn v-if="isAuthenticated" text to="/transcriptorWeb" color="#42b983"><v-icon>mdi-text-to-speech</v-icon>Transcriptor Web</v-btn>
           <v-btn v-if="isAuthenticated" text to="/miCuenta" class="d-flex align-center">
             <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')" subtitle="Bienvenido"
               :title="userName" class="custom-title"></v-list-item>

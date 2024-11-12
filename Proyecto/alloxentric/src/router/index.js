@@ -91,7 +91,8 @@ const routes = [
   {
     path: '/transcriptorWeb',
     name: 'transcriptorWeb',
-    component: transcriptorWeb
+    component: transcriptorWeb,
+    meta: { requiresAuth: true }
   }
 ]
 

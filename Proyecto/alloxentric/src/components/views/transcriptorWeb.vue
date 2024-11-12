@@ -110,6 +110,8 @@
         transcripcion: '',
         numeroTelefono: '', // Número de teléfono del usuario, se obtendrá en get_user_data
         usuarioId: null, // ID del usuario en el sistema, se obtendrá de find_usuario
+        usuario: null,
+        transcrito: null,
         creditos: 0, // Créditos disponibles, se obtendrá de find_usuario
         showAlert: false,
         isTranscribing: false,
@@ -117,7 +119,7 @@
         snackbar: false,
         snackbarMessage: '',
         snackbarColor: ''
-      };
+      };      
     },
     methods: {
       handleFileUpload(event) {
@@ -141,6 +143,7 @@
           const suscripciones = response.data.suscripciones;
           
           this.usuarioId = usuario.id_usuario;
+          this.usuarioNombre = usuario.username;
           this.creditos = suscripciones.creditos || 0; // Guardar los créditos disponibles
         } catch (error) {
           console.error("Error al obtener información del usuario:", error);
@@ -183,6 +186,8 @@
         this.transcripcion = response.data.transcripcion;
         await this.restarCredito();
         this.mostrarNotificacion('success', 'Transcripción completada con éxito.');
+        // Guardar la transcripción en la base de datos
+        await this.guardarTranscripcion();
       } catch (error) {
         console.error("Error al transcribir el audio:", error);
         this.mostrarNotificacion('error', 'Ocurrió un error al transcribir el audio.');
@@ -190,6 +195,21 @@
         this.isTranscribing = false;
       }
     },
+    async guardarTranscripcion() {
+        try {
+          await axios.post("http://localhost:8000/guardar-transcrito", null, {
+            params: {
+              id_usuario: this.usuarioId,
+              usuario: this.usuarioNombre,
+              numero_telefono: this.numeroTelefono,
+              transcrito: this.transcripcion
+            }
+          });
+        } catch (error) {
+          console.error("Error al guardar la transcripción:", error);
+          this.mostrarNotificacion('error', 'No se pudo guardar la transcripción.');
+        }
+      },
     copiarTranscripcion() {
       navigator.clipboard.writeText(this.transcripcion).then(() => {
         this.mostrarNotificacion('success', 'Transcripción copiada al portapapeles.');
