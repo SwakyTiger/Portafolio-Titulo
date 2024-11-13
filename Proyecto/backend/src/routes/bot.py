@@ -26,10 +26,10 @@ load_dotenv()
 def find_all_usuarios():
     return usuariosEntity(conn.alloxentric_db.usuario.find())
 
-@bot.get('/bot/{numero_telefono}', tags=["bot"])
-def find_usuario(numero_telefono: int):
+@bot.get('/bot/{email}/{username}', tags=["bot"])
+def find_usuario(email: str, username: str):
     # 1. Obtener el usuario con el número de teléfono
-    usuario = conn.alloxentric_db.usuario.find_one({"numero_telefono": numero_telefono})
+    usuario = conn.alloxentric_db.usuario.find_one({"email": email, "username": username})
     
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -64,6 +64,7 @@ def find_usuario(numero_telefono: int):
         "usuario": usuario_info,
         "suscripciones": suscripciones_info
     }
+
 
 
 
@@ -132,10 +133,10 @@ async def transcribir_audio(file: UploadFile = File(...)):
     
 
 
-@bot.put("/restar-creditos/{numero_telefono}", tags=["bot"])
-def restar_credito(numero_telefono: int):
+@bot.put("/restar-creditos/{username}", tags=["bot"])
+def restar_credito(username: str):
     # 1. Obtener el usuario con el número de teléfono
-    usuario = conn.alloxentric_db.usuario.find_one({"numero_telefono": numero_telefono})
+    usuario = conn.alloxentric_db.usuario.find_one({"username": username})
     
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -168,8 +169,7 @@ def restar_credito(numero_telefono: int):
 @bot.post("/guardar-transcrito", tags=['bot'])
 def guardar_transcrito(
     id_usuario: str = Query(..., description="Id del usuario"),
-    usuario: str = Query(..., description="Nombre del usuario"),
-    numero_telefono: str = Query(..., description="Número de teléfono del usuario"),
+    username: str = Query(..., description="Nombre del usuario"),
     transcrito: str = Query(..., description="Texto transcrito")
 ):
     # 1. Obtener el texto transcrito
@@ -178,8 +178,7 @@ def guardar_transcrito(
     # 2. Crear el documento a insertar
     documento = {
         "id_usuario": id_usuario,
-        "usuario": usuario,
-        "numero_telefono": numero_telefono,
+        "username": username,
         "data_transcrito": transcrito,
         "fecha_transcrito": fecha
     }
