@@ -91,7 +91,7 @@ async def transcribir_audio(audio_url: str):
         os.environ['GROQ_TOKEN'] = os.getenv('GROQ_TOKEN')
 
         # Llama al script de JavaScript para transcribir el audio
-        result = subprocess.run(['node', 'transcripcion/transcribir.js', file_location], capture_output=True, text=True)
+        result = subprocess.run(['node', 'transcripcion/transcribir.js', file_location], capture_output=True)
 
         # El resultado de la transcripción estará en result.stdout
         transcripcion = result.stdout.strip()
@@ -118,7 +118,7 @@ async def transcribir_audio(file: UploadFile = File(...)):
             f.write(await file.read())
 
         # Llama al script de JavaScript para transcribir el audio
-        result = subprocess.run(['node', 'transcripcion/transcribir.js', file_location], capture_output=True, text=True)
+        result = subprocess.run(['node', 'transcripcion/transcribir.js', file_location], capture_output=True)
 
         # El resultado de la transcripción estará en result.stdout
         transcripcion = result.stdout.strip()

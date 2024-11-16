@@ -6,6 +6,7 @@ from src.routes.pagos import pagos
 from src.routes.bot import bot
 from src.routes.suscripcion import suscripciones
 from src.routes.estadoSuscripcion import validarEstado
+from src.routes.historial_transcrito import historial
 from src.auth import keycloak_openid
 from fastapi.middleware.cors import CORSMiddleware
 import stripe
@@ -25,6 +26,7 @@ app.include_router(pagos)
 app.include_router(validarEstado)
 app.include_router(suscripciones)
 app.include_router(bot)
+app.include_router(historial)
 
 # Middleware para agregar Keycloak al estado de la solicitud
 @app.middleware("http")

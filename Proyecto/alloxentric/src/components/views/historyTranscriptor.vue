@@ -2,8 +2,8 @@
   <v-container fluid class="pa-0">
     <v-card flat>
       <v-card-title class="custom-title text-h4 font-weight-bold white--text pb-4">
-                <h1>Historial</h1>
-            </v-card-title>
+        <h1>Historial</h1>
+      </v-card-title>
 
       <v-row no-gutters>
         <v-col cols="12" md="3">
@@ -30,10 +30,10 @@
                 to="/historyTranscriptor"
               ></v-list-item>
               <v-list-item 
-              prepend-icon="mdi mdi-credit-card" 
-              title="Mis Suscripciones" 
-              value="about"
-              to="/miSuscripcion"
+                prepend-icon="mdi mdi-credit-card" 
+                title="Mis Suscripciones" 
+                value="about"
+                to="/miSuscripcion"
               ></v-list-item>
               <v-list-item
                 prepend-icon="mdi-logout"
@@ -88,6 +88,28 @@
               :items-per-page="10"
               class="mt-4"
             >
+              <template v-slot:[`item.fecha_transcrito`]="{ item }">
+                <span>{{ formatDate(item.fecha_transcrito) }}</span>
+              </template>
+              <template v-slot:[`item.data_transcrito`]="{ item }">
+                <div class="mensaje">
+                  <span v-if="!item.isExpanded && item.data_transcrito.length > 100">
+                    {{ truncateMessage(item.data_transcrito) }}
+                  </span>
+                  <span v-else>{{ item.data_transcrito }}</span>
+                  <v-btn
+                    v-if="item.data_transcrito.length > 100" 
+                    text 
+                    @click="toggleExpand(item)"
+                    color="grey-lighten-2"
+                    variant="flat"
+                    size="x-small"
+                    class="leer_mas"
+                  >
+                    {{ item.isExpanded ? 'Leer menos ⇧' : 'Leer más ⇩' }}
+                  </v-btn>
+                </div>
+              </template>
             </v-data-table>
           </v-card>
         </v-col>
@@ -98,6 +120,7 @@
 
 <script>
 import keycloak from "@/keycloak";
+import axios from "axios"; // Asegúrate de tener axios instalado
 
 export default {
   name: 'HistorialTranscriptor',
@@ -112,9 +135,10 @@ export default {
 
     return {
       fullName: '',
+      userName: '',
       email: '',
       search: '',
-      selectedYear: null,
+      selectedYear : null,
       selectedMonth: null,
       headers: [
         {
@@ -125,97 +149,12 @@ export default {
         },
         {
           align: 'start',
-          key: 'fecha',
+          key: 'fecha_transcrito',
           sortable: true,
           title: 'Fecha/Hora',
         },
       ],
-      desserts: [
-        {
-          data_transcrito: 'Hola, oye, no voy a poder llegar a la reunión a las 10. ¿Podemos moverla para las 11? Avísame si te sirve, porfa.',
-          fecha: '2024-09-02',
-        },
-        {
-          data_transcrito: 'Ah, me olvidé de decirte que la cena es mañana a las 8 en casa de Juan. No te preocupes por llevar nada, ya está todo listo.',
-          fecha: '2024-09-03',
-        },
-        {
-          data_transcrito: 'Hey, ¿puedes comprar leche cuando vengas? Se me olvidó cuando fui al súper. Gracias, nos vemos en un rato.',
-          fecha: '2024-09-05',
-        },
-        {
-          data_transcrito: 'Hola, Juan, acabo de ver el correo. Estoy revisando el documento que me mandaste, te envío los comentarios en una hora.',
-          fecha: '2024-09-08',
-        },
-        {
-          data_transcrito: 'Ah, me olvidé de decirte que el pato arrugó de nuevo y no va a entrar a jugar Cs, calladito champiñon.',
-          fecha: '2024-09-09',
-        },
-        {
-          data_transcrito: 'Necesito que me envíes el reporte antes de las 5 pm. Es urgente.',
-          fecha: '2023-08-15',
-        },
-        {
-          data_transcrito: 'Recuerda que la reunión de equipo es el viernes a las 10 am.',
-          fecha: '2023-07-12',
-        },
-        {
-          data_transcrito: 'El proyecto ha sido aprobado por el cliente. ¡Buen trabajo!',
-          fecha: '2023-06-22',
-        },
-        {
-          data_transcrito: '¿Podrías revisar el documento adjunto y darme tu feedback?',
-          fecha: '2023-05-30',
-        },
-        {
-          data_transcrito: 'El servidor estará en mantenimiento el próximo lunes de 2 am a 4 am.',
-          fecha: '2023-04-17',
-        },
-        {
-          data_transcrito: 'Hola, el paquete ha sido enviado y debería llegar el jueves.',
-          fecha: '2022-11-03',
-        },
-        {
-          data_transcrito: 'Recuerda que tienes una cita con el dentista el próximo miércoles.',
-          fecha: '2022-10-20',
-        },
-        {
-          data_transcrito: 'El evento se ha reprogramado para el próximo mes debido a la situación actual.',
-          fecha: '2022-09-15',
-        },
-        {
-          data_transcrito: 'Te envié la factura por correo. Por favor, confírmame si la recibiste.',
-          fecha: '2022-08-09',
-        },
-        {
-          data_transcrito: 'La presentación del proyecto es mañana a las 9 am. ¡No faltes!',
-          fecha: '2022-07-05',
-        },
-        {
-          data_transcrito: 'El cliente ha solicitado cambios en el diseño. Te paso los detalles en un rato.',
-          fecha: '2022-06-18',
-        },
-        {
-          data_transcrito: '¡Feliz cumpleaños! Espero que tengas un día increíble.',
-          fecha: '2022-05-12',
-        },
-        {
-          data_transcrito: 'El equipo ha completado la primera fase del proyecto. Ahora pasaremos a la siguiente.',
-          fecha: '2022-04-30',
-        },
-        {
-          data_transcrito: 'La reunión de seguimiento será el próximo lunes a las 2 pm.',
-          fecha: '2022-03-21',
-        },
-        {
-          data_transcrito: 'El curso de capacitación comienza el 1 de febrero. Por favor, regístrate a tiempo.',
-          fecha: '2022-02-01',
-        },
-        {
-          data_transcrito: 'El informe trimestral está listo y ha sido enviado a la dirección.',
-          fecha: '2022-01-15',
-        },
-      ],
+      desserts: [],
       years: years,
       months: [
         { title: 'Todos los meses', value: null },
@@ -249,19 +188,49 @@ export default {
       if (keycloak.authenticated) {
         const token = keycloak.tokenParsed;
         this.fullName = token.name || "";
+        this.userName = token.preferred_username || '';
         this.email = token.email || "";
       }
     },
-    formatDate(dateString) {
-      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-      return new Date(dateString).toLocaleDateString('es-ES', options);
+    async fetchHistoriales() {
+      try {
+        const username = this.userName;
+        const response = await axios.get(`http://localhost:8000/historial-transcrito?username=${username}`);
+        this.desserts = response.data.historiales.map(historial => ({
+          data_transcrito: historial.data_transcrito,
+          fecha_transcrito: historial.fecha_transcrito,
+          isExpanded: false, // Nuevo campo para controlar la expansión
+        }));
+      } catch (error) {
+        console.error("Error al obtener historiales:", error);
+      }
+    },
+    toggleExpand(item) {
+      item.isExpanded = !item.isExpanded; // Cambia el estado de expansión
+    },
+    truncateMessage(message, length = 100) {
+      return message.length > length ? message.substring(0, length) + '...' : message;
+    },
+    formatDate(date) {
+      if (!date) return '';
+      const formattedDate = new Date(date);
+      if (isNaN(formattedDate)) return '';
+      
+      return formattedDate.toLocaleString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
     },
   },
   computed: {
     filteredDesserts() {
       return this.desserts.filter(item => {
         const matchesSearch = item.data_transcrito.toLowerCase().includes(this.search.toLowerCase());
-        const itemDate = new Date(item.fecha);
+        const itemDate = new Date(item.fecha_transcrito);
         const matchesYear = this.selectedYear ? itemDate.getFullYear() === this.selectedYear : true;
         const matchesMonth = this.selectedMonth ? itemDate.getMonth() + 1 === this.selectedMonth : true;
         return matchesSearch && matchesYear && matchesMonth;
@@ -274,11 +243,18 @@ export default {
       this.isAuthenticated = false;
     };
     this.get_user_data();
+    this.fetchHistoriales();
   },
 }
 </script>
 
 <style scoped>
+.mensaje{
+  padding: 10px 0px 10px 0px;
+}
+.leer_mas{
+  margin-left: 5px !important;
+}
 .v-card {
   border-radius: 8px;
 }
