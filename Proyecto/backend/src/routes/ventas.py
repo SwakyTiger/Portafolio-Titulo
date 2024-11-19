@@ -15,14 +15,20 @@ ventas = APIRouter()
 async def get_ventas(year: Optional[int] = None, month: Optional[int] = None, estado: Optional[str] = Query(None)):
     try:
         query = {}
-        if year:
-            query["fecha_venta"] = {"$gte": datetime(
-                year, 1, 1), "$lt": datetime(year + 1, 1, 1)}
-        if month:
-            query["fecha_venta"]["$gte"] = datetime(year, month, 1)
-            query["fecha_venta"]["$lt"] = datetime(year, month + 1, 1)
-        if estado:
-            query["estado"] = estado
+        if year and month:
+            query["fecha_venta"] = {
+                "$gte": datetime(year, month, 1),
+                "$lt": datetime(year, month + 1, 1) if month < 12 else datetime(year + 1, 1, 1)
+            }
+        elif year:
+            query["fecha_venta"] = {
+                "$gte": datetime(year, 1, 1),
+                "$lt": datetime(year + 1, 1, 1)
+            }
+        elif month:
+            # Esto requiere que tengas un año predeterminado, podrías omitirlo si no es práctico
+            raise HTTPException(status_code=400, detail="El mes debe incluir el año.")
+
 
         
         ventas_list = list(conn.alloxentric_db.ventas.find(query))

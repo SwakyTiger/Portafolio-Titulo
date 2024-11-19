@@ -1,78 +1,87 @@
 <template>
-  <v-container class="centered-container">
-    <v-card class="custom-card">
-      <v-card-title class="custom-title">
+  <v-container fluid class="pa-0">
+    <v-card class="mx-auto" max-width="1400">
+      <v-card-title class="text-h4 font-weight-bold primary white--text py-4">
         Administrador de Ventas
       </v-card-title>
-      <v-select v-model="selectedYear" :items="years" label="Año" outlined></v-select>
-      <v-select v-model="selectedMonth" :items="months" label="Mes" outlined></v-select>
-      <v-btn @click="fetchVentas">Filtrar Ventas</v-btn>
-      <v-data-table :headers="headers" :items="ventas" :items-per-page="10" v-model:page="page" class="custom-table">
-        <template v-slot:no-data>
-          <v-alert type="info" dismissible>
-            No hay ventas disponibles para los filtros seleccionados.
-          </v-alert>
-        </template>
-        <template v-slot:[`item.usuario_info.username`]="{ item }">
-          <span>{{ item.usuario_info.username || 'N/A' }}</span>
-        </template>
-        <template v-slot:[`item.fecha_venta`]="{ item }">
-          <span>{{ formatDate(item.fecha_venta) }}</span>
-        </template>
-        <template v-slot:[`item.plan_info.nombre`]="{ item }">
-          <span>{{ item.plan_info.nombre || 'N/A' }}</span>
-        </template>
-        <template v-slot:[`item.total_pagado`]="{ item }">
-          <span>{{  formatCurrency(item.total_pagado / 100) }}</span>
-        </template>
-        <template v-slot:[`item.details`]="{ item }">
-          <v-btn @click="showDetails(item)" outlined>
-            <template v-slot:prepend>
-              <img :src="require('@/assets/icon-detalle.png')" alt="Detalles" class="custom-icon" />
-              Detalle
-            </template>
-          </v-btn>
-        </template>
-      </v-data-table>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" sm="6" md="4" lg="3">
+            <v-select v-model="selectedYear" :items="years" label="Año" outlined dense
+              @change="filterVentas"></v-select>
+          </v-col>
+          <v-col cols="12" sm="6" md="4" lg="3">
+            <v-select v-model="selectedMonth" :items="months" label="Mes" outlined dense
+              @change="filterVentas"></v-select>
+          </v-col>
+        </v-row>
+
+        <v-data-table :headers="headers" :items="filteredVentas" :items-per-page="10" v-model:page="page"
+          class="elevation-1">
+          <template v-slot:no-data>
+            <v-alert type="info" class="ma-2">
+              No hay ventas disponibles para los filtros seleccionados.
+            </v-alert>
+          </template>
+          <template v-slot:[`item.usuario_info.username`]="{ item }">
+            {{ item.usuario_info.username || 'N/A' }}
+          </template>
+          <template v-slot:[`item.fecha_venta`]="{ item }">
+            {{ formatDate(item.fecha_venta) }}
+          </template>
+          <template v-slot:[`item.plan_info.nombre`]="{ item }">
+            {{ item.plan_info.nombre || 'N/A' }}
+          </template>
+          <template v-slot:[`item.total_pagado`]="{ item }">
+            {{ formatCurrency(item.total_pagado / 100) }}
+          </template>
+          <template v-slot:[`item.details`]="{ item }">
+            <v-btn class="colores" small outlined @click="showDetails(item)">
+              <template v-slot:prepend>
+                <v-icon left small>mdi-information-outline</v-icon>
+                Detalle
+              </template>
+            </v-btn>
+          </template>
+        </v-data-table>
+
+        <v-row class="mt-4" align="center">
+          <v-col cols="12" sm="6">
+            <h2 class="text-h5">Total de ventas: {{ formatCurrency(totalVenta / 100) }}</h2>
+          </v-col>
+          <v-col cols="12" sm="6" class="text-sm-right">
+            <v-btn @click="generatePDF" color="primary">
+              <v-icon left>mdi-file-pdf-box</v-icon>
+              Generar Reporte de la Tabla
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
     </v-card>
 
-    <div class="titulo-total-container">
-      <div class="titulo-total">
-        <h1>Total de ventas: {{ formatCurrency(venta / 100) }}</h1>
-      </div>
-      <div class="botones-reportes">
-        <v-btn @click="generatePDF">Generar Reporte de la Tabla</v-btn>
-      </div>
-    </div>
-
-    <v-dialog v-model="dialog" max-width="600px">
+    <v-dialog v-model="dialog" max-width="500">
       <v-card>
-        <v-card-text>
-          <v-expansion-panels>
-            <v-expansion-panel>
-              <v-expansion-panel-content class="detalles">
-                <h1>Detalles de la Venta</h1>
-                <h4>Detalles del Comprador</h4>
-                <p>- Nombre: {{ selectedVenta.usuario_info.nombre }} {{ selectedVenta.usuario_info.apellido }}</p>
-                <p>- Correo: {{ selectedVenta.usuario_info.email }}</p>
-                <p>- País: {{ selectedVenta.usuario_info.pais }}</p>
-                <p>- Numero Telefónico: {{ selectedVenta.usuario_info.prefijo }} {{
-                  selectedVenta.usuario_info.numero_telefono }}</p>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-          </v-expansion-panels>
-        </v-card-text>
-        <v-card-text>
-          <v-expansion-panels>
-            <v-expansion-panel>
-              <v-expansion-panel-content class="detalles">
-                <h4>Detalles de Compra</h4>
-                <p>- Tipo de plan: {{ selectedVenta.plan_info.nombre }}</p>
-                <p>- Precio: {{ formatCurrency(selectedVenta.total_pagado / 100) }}</p>
-                <p>- Fecha de Venta: {{ formatDate(selectedVenta.fecha_venta) }}</p>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-          </v-expansion-panels>
+        <v-card-title class="headline colores white--text">Detalles de la Venta</v-card-title>
+        <v-card-text class="pa-4">
+          <v-list>
+            <v-subheader>Información del Comprador</v-subheader>
+            <v-list-item v-for="(value, key) in selectedVentaUserInfo" :key="key">
+              <v-list-item-content>
+                <v-list-item-title>{{ key }}</v-list-item-title>
+                <v-list-item-subtitle>{{ value }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+
+            <v-divider class="my-4"></v-divider>
+
+            <v-subheader>Información de la Venta</v-subheader>
+            <v-list-item v-for="(value, key) in selectedVentaSaleInfo" :key="key">
+              <v-list-item-content>
+                <v-list-item-title>{{ key }}</v-list-item-title>
+                <v-list-item-subtitle>{{ value }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -102,11 +111,11 @@ export default {
     return {
       page: 1,
       ventas: [],
-      venta: 0,
+      totalVenta: 0,
       headers: [
         { title: 'Nombre de Usuario', value: 'usuario_info.username' },
         { title: 'Fecha/Hora', value: 'fecha_venta' },
-        { title: 'Tipo de Plan', value: 'plan_info.nombre' }, 
+        { title: 'Tipo de Plan', value: 'plan_info.nombre' },
         { title: 'Precio', value: 'total_pagado' },
         { title: 'Detalles de compra', value: 'details' },
       ],
@@ -132,14 +141,37 @@ export default {
       ],
     };
   },
+  computed: {
+    filteredVentas() {
+      return this.ventas.filter(venta => {
+        const yearMatch = this.selectedYear ? new Date(venta.fecha_venta).getFullYear() === this.selectedYear : true;
+        const monthMatch = this.selectedMonth ? new Date(venta.fecha_venta).getMonth() + 1 === this.selectedMonth : true;
+        return yearMatch && monthMatch;
+      });
+    },
+    selectedVentaUserInfo() {
+      if (!this.selectedVenta) return {};
+      return {
+        'Nombre': `${this.selectedVenta.usuario_info.nombre} ${this.selectedVenta.usuario_info.apellido}`,
+        'Correo': this.selectedVenta.usuario_info.email,
+        'Número Telefónico': `${this.selectedVenta.usuario_info.prefijo} ${this.selectedVenta.usuario_info.numero_telefono}`,
+      };
+    },
+    selectedVentaSaleInfo() {
+      if (!this.selectedVenta) return {};
+      return {
+        'Tipo de plan': this.selectedVenta.plan_info.nombre,
+        'Precio': this.formatCurrency(this.selectedVenta.total_pagado / 100),
+        'Fecha de Venta': this.formatDate(this.selectedVenta.fecha_venta),
+      };
+    },
+  },
   methods: {
     async fetchVentas() {
       try {
         const response = await axios.get('http://localhost:8000/ventas');
         this.ventas = response.data.ventas;
-        this.totalClientes = response.data.total_clientes;
         this.calculateTotalVenta();
-        this.planTypes = [...new Set(this.ventas.map(venta => venta.nombre_plan))];
       } catch (error) {
         console.error('Error fetching ventas:', error);
       }
@@ -151,20 +183,12 @@ export default {
     formatCurrency(amount) {
       return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(amount);
     },
-    formatDate(date) {
-      if (!date) return '';
-      const formattedDate = new Date(date);
-      if (isNaN(formattedDate)) return '';
-      const year = formattedDate.getFullYear();
-      const month = String(formattedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(formattedDate.getDate()).padStart(2, '0');
-      const hours = String(formattedDate.getHours()).padStart(2, '0');
-      const minutes = String(formattedDate.getMinutes()).padStart(2, '0');
-      const seconds = String(formattedDate.getSeconds()).padStart(2, '0');
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    formatDate(dateString) {
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+      return new Date(dateString).toLocaleDateString('es-ES', options);
     },
     calculateTotalVenta() {
-      this.venta = this.ventas.reduce((sum, venta) => sum + venta.total_pagado, 0);
+      this.totalVenta = this.filteredVentas.reduce((sum, venta) => sum + venta.total_pagado, 0);
     },
     generatePDF() {
       try {
@@ -181,12 +205,12 @@ export default {
 
         const startY = 40;
 
-        const columns = ["Código de Venta", "Fecha", "Tipo de Plan", "Precio"];
-        const rows = this.ventas.map(item => [
-          item.id_venta,
+        const columns = ["Usuario", "Fecha", "Tipo de Plan", "Precio"];
+        const rows = this.filteredVentas.map(item => [
+          item.usuario_info.username,
           this.formatDate(item.fecha_venta),
           item.plan_info.nombre,
-          this.formatCurrency(item.total_pagado),
+          this.formatCurrency(item.total_pagado / 100),
         ]);
 
         doc.autoTable({
@@ -196,7 +220,7 @@ export default {
           theme: 'grid',
         });
 
-        doc.text(`Total de ventas: ${this.formatCurrency(this.venta)}`, 14, doc.lastAutoTable.finalY + 10);
+        doc.text(`Total de ventas: ${this.formatCurrency(this.totalVenta  / 100)}`, 14, doc.lastAutoTable.finalY + 10);
         doc.save('reporte_ventas.pdf');
       } catch (error) {
         console.error('Error generating PDF:', error);
@@ -210,106 +234,24 @@ export default {
 };
 </script>
 
-
 <style scoped>
-html,
-body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  /* Oculta el desbordamiento horizontal en toda la página */
-}
-
-.centered-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  height: 100%;
-  background-color: #ffffff;
-}
-
-.custom-card {
-  max-width: 80%;
-  width: 100%;
-  box-sizing: border-box;
-  /* Asegura que el padding y el borde estén incluidos en el ancho total */
-}
-
-.custom-title {
-  font-size: 34px;
-  font-family: 'Arial', sans-serif;
-  font-weight: bold;
-}
-
-
-.custom-table {
-  width: 100%;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-  box-sizing: border-box;
-  /* Asegura que el padding y el borde estén incluidos en el ancho total */
-}
-
-.v-data-table>.v-data-table__tr:nth-child(even) {
-  background-color: #f5f5f5;
-  /* Fondo gris claro para filas pares */
-}
-
-/* Estilo para el botón */
-.custom-btn {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 8px 16px;
-  /* Ajusta el padding según sea necesario */
-}
-
-/* Estilo para el logo dentro del botón */
-.custom-icon {
-  width: 24px;
-  /* Ajusta el tamaño del logo según tus preferencias */
-  height: 24px;
-  /* Ajusta el tamaño del logo según tus preferencias */
-}
-
-.titulo-total-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  width: 80%;
-  margin-top: 20px;
-  box-sizing: border-box;
-}
-
-.botones-reportes {
-  margin-right: 20px;
-  /* Alinea los botones en una columna */
-  display: flex;
-  flex-direction: column;
-  justify-content: stretch;
-}
-
-.reporte-btn {
-  background-color: #1DBEA8;
-  /* Cambia el color de fondo del botón */
+.colores {
   color: #ffffff;
-  /* Cambia el color del texto del botón */
-  margin: 5px;
-  /* Espacio entre los botones */
+  background-color: #54af86;
 }
 
-/* Estilo para el título */
-.titulo-total {
-  flex-grow: 1;
-  /* Asegura que el título ocupe el espacio restante */
+.v-data-table ::v-deep .v-data-table__wrapper {
+  overflow-x: auto;
 }
 
-.titulo-total h1 {
-  text-align: start;
+.v-data-table ::v-deep .v-data-table__wrapper table {
+  min-width: 600px;
 }
 
-.detalles p {
-  margin: 5px 0px 5px 15px;
+@media (max-width: 600px) {
+  .v-btn {
+    width: 100%;
+    margin-bottom: 10px;
+  }
 }
 </style>
