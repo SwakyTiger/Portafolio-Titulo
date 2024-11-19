@@ -270,4 +270,35 @@
     },
   };
   </script>
+    <style scoped>
+  .v-card {
+    transition: box-shadow 0.3s ease-in-out;
+  }
   
+  .v-card:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important;
+  }
+  
+  .v-btn {
+    text-transform: none;
+  }
+  .custom-title {
+  font-size: 34px;
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+}
+.custom-card {
+  max-width: 80%;
+  width: 100%;
+  box-sizing: border-box;
+  /* Asegura que el padding y el borde estén incluidos en el ancho total */
+}
+.centered-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+  background-color: #ffffff;
+}
+  </style>
