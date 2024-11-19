@@ -17,6 +17,7 @@
           <v-btn v-if="isAdmin" text to="/CuadraturaMensual" color="#42b983"><v-icon>mdi-calculator</v-icon>Cuadratura Mensual</v-btn>
           <v-btn v-if="isAdmin" text to="/crudPlanes" color="#42b983"><v-icon>mdi-view-list</v-icon>Administrador de Planes</v-btn>
           <v-btn v-if="isAdmin" text to="/ventasReport" color="#42b983"><v-icon>mdi-chart-bar</v-icon>Administrador de Ventas</v-btn>
+          <v-btn v-if="isAdmin" text to="/dashboard" color="#42b983"><v-icon>mdi mdi-monitor-dashboard</v-icon>Dashboard</v-btn>
           <v-btn v-if="!isAuthenticated" text @click="handleAuthAction" id="authButton" color="#42b983">
             Iniciar Sesión
           </v-btn>
@@ -60,6 +61,9 @@
         </v-list-item>
         <v-list-item v-if="isAdmin" to="/ventasReport" link>
           <v-list-item-title><v-icon>mdi-chart-bar</v-icon>Administrador de Ventas</v-list-item-title>
+        </v-list-item>
+        <v-list-item v-if="isAdmin" to="/dashboard" link>
+          <v-list-item-title><v-icon>mdi mdi-monitor-dashboard</v-icon>Dashboard</v-list-item-title>
         </v-list-item>
         <v-list-item v-if="!isAuthenticated" @click="handleAuthAction" link>
           <v-list-item-title>Iniciar Sesión</v-list-item-title>

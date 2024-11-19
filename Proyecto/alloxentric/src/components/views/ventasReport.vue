@@ -14,7 +14,7 @@
             <v-select v-model="selectedMonth" :items="months" label="Mes" outlined dense
               @change="filterVentas"></v-select>
           </v-col>
-        </v-row>
+        </v-row>  
 
         <v-data-table :headers="headers" :items="filteredVentas" :items-per-page="10" v-model:page="page"
           class="elevation-1">

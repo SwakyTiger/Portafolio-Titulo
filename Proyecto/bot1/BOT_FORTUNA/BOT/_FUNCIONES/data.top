@@ -1,7 +1,0 @@
-﻿outputmacro: ^datalabel(^label)
-	^join(* ^label %topic ~ ^getrule(label %rule))
-
-
-
-
-

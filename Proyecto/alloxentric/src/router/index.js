@@ -13,6 +13,7 @@ import home from '@/components/views/Home.vue'
 import editarInfoUser from '@/components/views/editarInfoUser.vue'
 import miSuscripcion from '@/components/views/miSuscripcion.vue'
 import transcriptorWeb from '@/components/views/transcriptorWeb.vue'
+import dashboard from '@/components/views/dashboard.vue'
 import keycloak from '@/keycloak';
 
 const routes = [
@@ -93,6 +94,12 @@ const routes = [
     name: 'transcriptorWeb',
     component: transcriptorWeb,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: dashboard,
+    meta: { requiresAdmin: true }
   }
 ]
 
