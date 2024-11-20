@@ -87,7 +87,7 @@ export default {
                 keycloak.login();
             }
         },
-        get_user_data() {
+        async get_user_data() {
             if (keycloak.authenticated) {
                 const token = keycloak.tokenParsed;
 
@@ -96,7 +96,7 @@ export default {
                     console.log(`${key}: ${value}`);
                 }
 
-                this.fullName = token.name;
+                this.fullName = token.given_name || '';  // Se asume que el nombre está en given_name
                 this.userName = token.preferred_username || '';
                 this.email = token.email || '';
 
@@ -110,15 +110,84 @@ export default {
                 console.log('Username:', this.userName);
                 console.log('Email:', this.email);
                 console.log('Phone Number:', this.phoneNumber);
+
+                // Ahora verificamos si los datos del usuario en Keycloak coinciden con los datos almacenados
+                const userData = {
+                    id_usuario: token.sub,
+                    nombre: token.given_name || '',
+                    apellido: token.family_name || '',
+                    prefijo: token.prefijo || '',
+                    numero_telefono: token.telefono ? parseInt(token.telefono) : null,
+                    email: token.email || '',
+                    username: token.preferred_username || '',
+                };
+
+                try {
+                    const response = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`);
+
+                    if (response.status === 404) {
+                        // Usuario no existe, lo guardamos
+                        const saveResponse = await fetch('http://localhost:8000/usuarios', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(userData),
+                        });
+
+                        if (saveResponse.ok) {
+                            console.log('Usuario guardado correctamente');
+                        } else {
+                            throw new Error('Error al guardar los datos del usuario');
+                        }
+                    } else if (response.ok) {
+                        // Usuario existe, verificamos cambios
+                        const userInDb = await response.json();
+                        const hasChanges = this.checkForChanges(userInDb, userData);
+
+                        if (hasChanges) {
+                            console.log('Se detectaron cambios, actualizando usuario...');
+                            const updateResponse = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`, {
+                                method: 'PUT', 
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(userData),
+                            });
+
+                            if (updateResponse.ok) {
+                                console.log('Usuario actualizado correctamente');
+                            } else {
+                                throw new Error('Error al actualizar los datos del usuario');
+                            }
+                        } else {
+                            console.log('No se detectaron cambios, no se actualiza el usuario.');
+                        }
+                    } else {
+                        throw new Error('Error al verificar el usuario en la base de datos');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
             }
-        }
+        },
+        checkForChanges(userInDb, userData) {
+            // Compara cada campo relevante
+            return (
+                userInDb.nombre !== userData.nombre ||
+                userInDb.apellido !== userData.apellido ||
+                userInDb.prefijo !== userData.prefijo ||
+                userInDb.numero_telefono !== userData.numero_telefono ||
+                userInDb.email !== userData.email ||
+                userInDb.username !== userData.username
+            );
+        },
     },
     mounted() {
         // Verificar el estado de autenticación al montar el componente
         this.isAuthenticated = keycloak.authenticated;
         keycloak.onAuthLogout = () => {
             this.isAuthenticated = false;
-            this.isAdmin = false; // Restablece el rol de admin cuando se cierre sesión
         };
         this.get_user_data();
     }

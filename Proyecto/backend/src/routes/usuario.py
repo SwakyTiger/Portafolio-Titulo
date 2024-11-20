@@ -100,7 +100,7 @@ def find_usuario(id_plan: int):
     return usuarioEntity(conn.alloxentric_db.usuario.find_one({"id_plan": id_plan}))
 
 @usuarios.put('/usuarios/{id}', response_model=Usuario, tags=["Usuarios"])
-def update_usuario(id: int, usuario: Usuario):
+def update_usuario(id: str, usuario: Usuario):
     result = conn.alloxentric_db.usuario.find_one_and_update(
         {"id_usuario": id},
         {"$set": dict(usuario)},

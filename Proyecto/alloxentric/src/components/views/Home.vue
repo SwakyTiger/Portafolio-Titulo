@@ -92,48 +92,82 @@ export default {
             console.log('Intento de inicio de sesión con:', this.email, this.password)
         },
         async get_user_data() {
-            if (keycloak.authenticated) {
-                const token = keycloak.tokenParsed;
+    if (keycloak.authenticated) {
+        const token = keycloak.tokenParsed;
 
-                const userData = {
-                    id_usuario: token.sub,
-                    nombre: token.given_name || '',  // Keycloak suele usar given_name para el nombre
-                    apellido: token.family_name || '',  // family_name para el apellido
-                    prefijo: token.prefijo || '',
-                    numero_telefono: parseInt(token.telefono) || 0,  // Asegúrate de que sea un número
-                    email: token.email || '',
-                    username: token.preferred_username || '',
-                };
-                
-                // Mostrar en consola para depuración
-                console.log('Datos del usuario:', userData);
+        const userData = {
+            id_usuario: token.sub,
+            nombre: token.given_name || '', // Keycloak suele usar given_name para el nombre
+            apellido: token.family_name || '', // family_name para el apellido
+            prefijo: token.prefijo || '',
+            numero_telefono: token.telefono ? parseInt(token.telefono) : null, // Asegúrate de que sea un número
+            email: token.email || '',
+            username: token.preferred_username || '',
+        };
 
-                try {
-                    const response = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`);
+        // Mostrar en consola para depuración
+        console.log('Datos del usuario autenticado:', userData);
 
-                    if (response.status === 404) {
-                        // Usuario no existe, lo guardamos
-                        const saveResponse = await fetch('http://localhost:8000/usuarios', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(userData),
-                        });
+        try {
+            const response = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`);
 
-                        if (saveResponse.ok) {
-                            console.log('Usuario guardado correctamente');
-                        } else {
-                            throw new Error('Error al guardar los datos del usuario');
-                        }
-                    } else {
-                        console.log('El usuario ya existe en la base de datos');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
+            if (response.status === 404) {
+                // Usuario no existe, lo guardamos
+                const saveResponse = await fetch('http://localhost:8000/usuarios', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData),
+                });
+
+                if (saveResponse.ok) {
+                    console.log('Usuario guardado correctamente');
+                } else {
+                    throw new Error('Error al guardar los datos del usuario');
                 }
+            } else if (response.ok) {
+                // Usuario existe, verificamos cambios
+                const userInDb = await response.json();
+                const hasChanges = this.checkForChanges(userInDb, userData);
+
+                if (hasChanges) {
+                    console.log('Se detectaron cambios, actualizando usuario...');
+                    const updateResponse = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`, {
+                        method: 'PUT', 
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(userData),
+                    });
+
+                    if (updateResponse.ok) {
+                        console.log('Usuario actualizado correctamente');
+                    } else {
+                        throw new Error('Error al actualizar los datos del usuario');
+                    }
+                } else {
+                    console.log('No se detectaron cambios, no se actualiza el usuario.');
+                }
+            } else {
+                throw new Error('Error al verificar el usuario en la base de datos');
             }
+        } catch (error) {
+            console.error('Error:', error);
         }
+    }
+},
+checkForChanges(userInDb, userData) {
+    // Compara cada campo relevante
+    return (
+        userInDb.nombre !== userData.nombre ||
+        userInDb.apellido !== userData.apellido ||
+        userInDb.prefijo !== userData.prefijo ||
+        userInDb.numero_telefono !== userData.numero_telefono ||
+        userInDb.email !== userData.email ||
+        userInDb.username !== userData.username
+    );
+},
     },
     mounted() {
         this.get_user_data();
