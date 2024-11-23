@@ -95,10 +95,6 @@ async def create_usuario(usuario: Usuario):
     result = conn.alloxentric_db.usuario.insert_one(usuario_data)
     return {"message": "Usuario guardado correctamente", "id": str(result.inserted_id)}
 
-@usuarios.get('/usuarios/{id}', tags=["Usuarios"])
-def find_usuario(id_plan: int):
-    return usuarioEntity(conn.alloxentric_db.usuario.find_one({"id_plan": id_plan}))
-
 @usuarios.put('/usuarios/{id}', response_model=Usuario, tags=["Usuarios"])
 def update_usuario(id: str, usuario: Usuario):
     result = conn.alloxentric_db.usuario.find_one_and_update(
@@ -114,8 +110,8 @@ def update_usuario(id: str, usuario: Usuario):
     return usuarioEntity(result)
 
 @usuarios.delete('/usuarios/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=["Usuarios"])
-def delete_usuario(id: int):
-    result = conn.alloxentric_db.usuario.find_one_and_delete({"id_plan": id})
+def delete_usuario(id: str):
+    result = conn.alloxentric_db.usuario.find_one_and_delete({"id_usuario": id})
     if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

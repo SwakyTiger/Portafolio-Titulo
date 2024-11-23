@@ -4,7 +4,6 @@ from src.config.db import conn
 from ..schemas.schemas import ventaEntity, ventasEntity
 from ..models.models import Venta
 from starlette.status import HTTP_204_NO_CONTENT
-from .prefijos_paises import prefijos_paises
 from datetime import datetime
 import logging
 
@@ -64,7 +63,7 @@ async def get_ventas(year: Optional[int] = None, month: Optional[int] = None, es
         print(f"Error al obtener ventas: {e}")
         return {"error": str(e)}, 500
 
-ventas.post('/ventas', tags=["ventas"])
+ventas.post('/ventas', tags=["ventas"]) # ELIMINAR LUEGO DE REVISION
 def create_venta(venta: Venta):
     existing_venta = conn.alloxentric_db.ventas.find_one({"id_suscripcion": venta.id_suscripcion})
     if existing_venta:
@@ -77,33 +76,6 @@ def create_venta(venta: Venta):
 
     venta = conn.alloxentric_db.ventas.find_one({"_id": id})
     return ventaEntity(venta)
-@ventas.get('/ventas/{id}', tags=["ventas"])
-def find_venta(id_venta: int ):
-    return ventaEntity(conn.alloxentric_db.ventas.find_one({"id_venta": id_venta}))
 
-@ventas.put('/ventas/{id}', response_model=Venta, tags=["ventas"])
-def update_venta(id: str, venta: Venta):
-    result = conn.alloxentric_db.ventas.find_one_and_update(
-        {"id_suscripcion": id},
-        {"$set": dict(venta)},
-        return_document=True
-    )
-    if result is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"La venta con id {id} no existe."
-        )
-    return ventaEntity(result)
-
-
-@ventas.delete('/ventas/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=["ventas"])
-def delete_venta(id: str):
-    result = conn.alloxentric_db.ventas.find_one_and_delete({"id_venta": id})
-    if not result:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"La venta con id {id} no existe."
-        )
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

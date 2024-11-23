@@ -14,6 +14,9 @@
         <template v-slot:[`item.precio`]="{ item }">
           <span>{{ formatCurrency(item.precio / 100) }}</span>
         </template>
+        <template v-slot:[`item.fecha_modificacion`]="{ item }">
+          <span>{{ formatDate(item.fecha_modificacion) }}</span>
+        </template>
         <template v-slot:[`item.edit`]="{ item }">
           <v-btn @click="showEdit(item)" outlined color="red">
             <template v-slot:prepend>
@@ -41,6 +44,13 @@
     <v-dialog v-model="createDialog" max-width="600px">
       <v-card>
         <v-card-title class="headline">Crear Nuevo Plan</v-card-title>
+        <v-alert
+          v-model="showAlert"
+          type="error"
+          dismissible
+          class="mb-4">
+          {{ errorMessage }}
+        </v-alert>
         <v-card-text>
           <v-form ref="form">
             <v-text-field
@@ -53,17 +63,19 @@
               label="Nombre del Plan"
               required
             ></v-text-field>
+            <span>Precio ingresado: {{ formatCurrency(newPlan.precio / 100) }}</span>
             <v-text-field
               v-model="newPlan.precio"
               label="Precio"
-              type="float"
+              type="number"
               step="0.01"
               required
             ></v-text-field>
+            
             <v-text-field
               v-model="newPlan.creditos"
               label="Creditos"
-              type="float"
+              type="number"
               step="0.01"
             ></v-text-field>
             <v-textarea
@@ -88,19 +100,21 @@
         <v-card-text>
           <p>
             <strong>Fecha de última modificación:</strong>
-            {{ selectedPlan.date }}
+            {{ formatDate(selectedPlan.fecha_modificacion) }}
           </p>
           <v-form ref="form">
             <v-text-field
               v-model="selectedPlan.id_plan"
               label="Código"
               required
+              disabled
             ></v-text-field>
             <v-text-field
               v-model="selectedPlan.nombre"
               label="Nombre del Plan"
               required
             ></v-text-field>
+            <span>Precio ingresado: {{ formatCurrency(selectedPlan.precio / 100) }}</span>
             <v-text-field
               v-model="selectedPlan.precio"
               label="Precio"
@@ -156,13 +170,24 @@ export default {
         plan: '',
         precio: 0,
         creditos: 0,
-      }
+      },
+      errorMessage: '',
+      showAlert: false,
     };
   },
   created() {
     this.fetchPlanes();
   },
   methods: {
+    formatDate(date) {
+      if (!date) return ''; // Manejo de fechas nulas
+      const parsedDate = new Date(date); // Asegúrate de que sea un objeto Date
+      return parsedDate.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+    },
     async fetchPlanes() {
       try {
         const response = await axios.get("http://localhost:8000/plans");
@@ -178,6 +203,7 @@ export default {
     openCreateDialog() {
       this.newPlan = { codigo: "", plan: "", precio: 0, creditos: 0 }; // Resetea el formulario
       this.createDialog = true;
+      this.showAlert = false;
     },
 
     async updatePlan() {
@@ -208,19 +234,19 @@ export default {
   try {
     const now = new Date();
     const planData = {
-      id_plan: this.newPlan.id_plan,  // Asegúrate de que coincida con el modelo
+      id_plan: this.newPlan.id_plan, // Asegúrate de que coincida con el modelo
       nombre: this.newPlan.nombre,
       precio: this.newPlan.precio,
       descripcion: this.newPlan.descripcion,
       creditos: this.newPlan.creditos,
-      fecha_modificacion: this.newPlan.fecha_modificacion = now.toLocaleString("es-ES", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),  // Formato ISO 8601
+      fecha_modificacion: now.toLocaleString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }), // Formato ISO 8601
     };
 
     await axios.post("http://localhost:8000/plans", planData);
@@ -228,9 +254,10 @@ export default {
     this.createDialog = false;
     this.fetchPlanes(); // Recarga la lista de planes
   } catch (error) {
-    console.error("Error al guardar el plan:", error);
+    this.errorMessage = error.response?.data?.detail || "Ocurrió un error al guardar el plan.";
+    this.showAlert = true;
   }
-  },
+},
 
 
     async deletePlan() {

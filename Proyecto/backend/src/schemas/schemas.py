@@ -24,7 +24,6 @@ def ventaEntity(item) -> dict:
         "fecha_venta": item["fecha_venta"],
         "fecha_vencimiento": item["fecha_vencimiento"],  # Se puede hacer opcional si al crear la venta inicial aún no tienes la fecha
         "total_pagado": item["total_pagado"],
-        "estado": item["estado"]
     }
 
 def ventasEntity(entity) -> list:

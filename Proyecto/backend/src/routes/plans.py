@@ -9,12 +9,22 @@ import stripe
 
 plans = APIRouter()
 
+#BUSCAR TODOS LOS PLANES
 @plans.get('/plans', tags=["plans"])
 def find_all_plans():
     return plansEntity(conn.alloxentric_db.planes.find())
 
+#CREAR UN NUEVO PLAN
 @plans.post('/plans', tags=["plans"])
 async def create_plan(plan: Plan):
+    # Valida que no exista un plan con el mismo código
+    existing_plan = conn.alloxentric_db.planes.find_one({"id_plan": plan.id_plan})
+    if existing_plan:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ya existe un plan con el código {plan.id_plan}. Por favor, usa un código diferente."
+        )
+
     # Crea el producto en Stripe
     try:
         product = stripe.Product.create(
@@ -47,10 +57,12 @@ async def create_plan(plan: Plan):
             detail=f"Error al crear el plan en Stripe: {str(e)}"
         )
     
-@plans.get('/plans/{id}', tags=["plans"])
+#BUSCAR UN PLAN POR SU ID
+@plans.get('/plans/{id_plan}', tags=["plans"])
 def find_plan(id_plan: str ):
     return planEntity(conn.alloxentric_db.planes.find_one({"id_plan": id_plan}))
 
+#ACTUALIZAR PLANES
 @plans.post('/plans/{id_plan}', tags=["plans"])
 def update_plan(id_plan: str, plan: Plan):
     try:
@@ -65,6 +77,7 @@ def update_plan(id_plan: str, plan: Plan):
         new_price = stripe.Price.create(
             product=plan.stripe_product_id,
             unit_amount=int(plan.precio),  # Stripe espera el monto en centavos
+            recurring={"interval": "month"},
             currency="usd",
         )
 
@@ -93,7 +106,7 @@ def update_plan(id_plan: str, plan: Plan):
 
     return planEntity(result)
 
-
+#ELIMINAR UN PLAN POR SU ID
 @plans.delete('/plans/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=["plans"])
 def delete_plan(id: str):
     result = conn.alloxentric_db.planes.find_one_and_delete({"id_plan": id})
@@ -103,5 +116,3 @@ def delete_plan(id: str):
             detail=f"El plan con id {id} no existe."
         )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-

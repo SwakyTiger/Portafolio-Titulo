@@ -108,7 +108,7 @@ async def actualizar_suscripcion(subscriptionId: str, newPriceId: str):
         plan_id = plan.get("id_plan")
         total_pagado = plan.get("precio")
         creditos_nuevos = plan.get("creditos", 0)  # Créditos adicionales del nuevo plan
-
+        
         # Recuperar la suscripción actual desde Stripe
         subscription = stripe.Subscription.retrieve(subscriptionId)
         
