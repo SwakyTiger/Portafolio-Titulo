@@ -15,7 +15,7 @@
           <span>{{ formatCurrency(item.precio / 100) }}</span>
         </template>
         <template v-slot:[`item.fecha_modificacion`]="{ item }">
-          <span>{{ formatDate(item.fecha_modificacion) }}</span>
+          <span>{{ handleDate(item.fecha_modificacion) }}</span>
         </template>
         <template v-slot:[`item.edit`]="{ item }">
           <v-btn @click="showEdit(item)" outlined color="red">
@@ -34,55 +34,25 @@
 
     <div class="titulo-total-container">
       <div class="botones-reportes">
-        <v-btn class="reporte-btn" @click="openCreateDialog"
-          >+ Crear nuevo Plan</v-btn
-        >
+        <v-btn class="reporte-btn" @click="openCreateDialog">+ Crear nuevo Plan</v-btn>
       </div>
     </div>
 
-    <!-- Ventana emergente para crear un nuevo plan -->
+    <!-- Crear Nuevo Plan -->
     <v-dialog v-model="createDialog" max-width="600px">
       <v-card>
         <v-card-title class="headline">Crear Nuevo Plan</v-card-title>
-        <v-alert
-          v-model="showAlert"
-          type="error"
-          dismissible
-          class="mb-4">
+        <v-alert v-model="showAlert" type="error" dismissible class="mb-4">
           {{ errorMessage }}
         </v-alert>
         <v-card-text>
           <v-form ref="form">
-            <v-text-field
-              v-model="newPlan.id_plan"
-              label="Código"
-              required
-            ></v-text-field>
-            <v-text-field
-              v-model="newPlan.nombre"
-              label="Nombre del Plan"
-              required
-            ></v-text-field>
+            <v-text-field v-model="newPlan.id_plan" label="Código" required></v-text-field>
+            <v-text-field v-model="newPlan.nombre" label="Nombre del Plan" required></v-text-field>
             <span>Precio ingresado: {{ formatCurrency(newPlan.precio / 100) }}</span>
-            <v-text-field
-              v-model="newPlan.precio"
-              label="Precio"
-              type="number"
-              step="0.01"
-              required
-            ></v-text-field>
-            
-            <v-text-field
-              v-model="newPlan.creditos"
-              label="Creditos"
-              type="number"
-              step="0.01"
-            ></v-text-field>
-            <v-textarea
-              v-model="newPlan.descripcion"
-              label="Descripcion"
-              
-            ></v-textarea>
+            <v-text-field v-model="newPlan.precio" label="Precio" type="number" step="0.01" required></v-text-field>
+            <v-text-field v-model="newPlan.creditos" label="Creditos" type="number" step="0.01"></v-text-field>
+            <v-textarea v-model="newPlan.descripcion" label="Descripción"></v-textarea>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -93,85 +63,80 @@
       </v-card>
     </v-dialog>
 
-    <!-- Ventana emergente para editar un plan -->
+    <!-- Editar Plan -->
     <v-dialog v-model="dialog" max-width="600px">
       <v-card>
         <v-card-title class="headline">Editar Plan</v-card-title>
         <v-card-text>
           <p>
             <strong>Fecha de última modificación:</strong>
-            {{ formatDate(selectedPlan.fecha_modificacion) }}
+            {{ handleDate(selectedPlan.fecha_modificacion) }}
           </p>
           <v-form ref="form">
-            <v-text-field
-              v-model="selectedPlan.id_plan"
-              label="Código"
-              required
-              disabled
-            ></v-text-field>
-            <v-text-field
-              v-model="selectedPlan.nombre"
-              label="Nombre del Plan"
-              required
-            ></v-text-field>
+            <v-text-field v-model="selectedPlan.id_plan" label="Código" required disabled></v-text-field>
+            <v-text-field v-model="selectedPlan.nombre" label="Nombre del Plan" required></v-text-field>
             <span>Precio ingresado: {{ formatCurrency(selectedPlan.precio / 100) }}</span>
-            <v-text-field
-              v-model="selectedPlan.precio"
-              label="Precio"
-              type="number"
-              step="0.01"
-              required
-            ></v-text-field>
-            <v-text-field
-              v-model="selectedPlan.creditos"
-              label="Total Segundos"
-              type="number"
-              step="0.01"
-            ></v-text-field>
-            <v-textarea
-              v-model="selectedPlan.descripcion"
-              label="Descripcion"
-              
-            ></v-textarea>
+            <v-text-field v-model="selectedPlan.precio" label="Precio" type="number" step="0.01" required></v-text-field>
+            <v-text-field v-model="selectedPlan.creditos" label="Creditos" type="number" step="0.01"></v-text-field>
+            <v-textarea v-model="selectedPlan.descripcion" label="Descripción"></v-textarea>
           </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" text @click="updatePlan">Guardar</v-btn>
           <v-btn @click="dialog = false">Cancelar</v-btn>
-          <v-btn color="red" text @click="deletePlan">Eliminar</v-btn>
+          <v-btn color="red" text @click="openDeleteDialog(selectedPlan)">Eliminar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Confirmación para Eliminar -->
+    <v-dialog v-model="deleteDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Confirmación</v-card-title>
+        <v-card-text>
+          ¿Estás seguro de que deseas eliminar el "<strong>{{ selectedPlan?.nombre }}</strong>"? 
+          Esta acción no se puede deshacer.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="red" text @click="confirmDeletePlan">Eliminar</v-btn>
+          <v-btn text @click="deleteDialog = false">Cancelar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </v-container>
 </template>
 
+
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   data() {
     return {
       planes: [],
       headers: [
-        { title: 'Código', value: 'id_plan' },
-        {title: 'Fecha de Modificacion', value: 'fecha_modificacion'},
-        { title: 'Nombre del Plan', value: 'nombre' },
-        { title: 'Precio', value: 'precio' },
-        { title: 'Creditos', value: 'creditos' },
-        { title: 'Acciones', value: 'edit', sortable: false }
+        { title: "Código", value: "id_plan" },
+        { title: "Fecha de Modificación", value: "fecha_modificacion" },
+        { title: "Nombre del Plan", value: "nombre" },
+        { title: "Precio", value: "precio" },
+        { title: "Creditos", value: "creditos" },
+        { title: "Acciones", value: "edit", sortable: false },
       ],
       page: 1,
       createDialog: false,
       dialog: false,
+      deleteDialog: false,
       selectedPlan: null,
       newPlan: {
-        codigo: '',
-        plan: '',
+        id_plan: "",
+        nombre: "",
         precio: 0,
         creditos: 0,
+        descripcion: "",
       },
-      errorMessage: '',
+      errorMessage: "",
       showAlert: false,
     };
   },
@@ -179,14 +144,21 @@ export default {
     this.fetchPlanes();
   },
   methods: {
+    handleDate(date) {
+      if (typeof date === "string" && isNaN(Date.parse(date))) {
+        return date;
+      }
+      return this.formatDate(date);
+    },
     formatDate(date) {
-      if (!date) return ''; // Manejo de fechas nulas
-      const parsedDate = new Date(date); // Asegúrate de que sea un objeto Date
-      return parsedDate.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
+      const options = { year: "numeric", month: "2-digit", day: "2-digit" };
+      return new Date(date).toLocaleDateString(undefined, options);
+    },
+    formatCurrency(amount) {
+      return new Intl.NumberFormat("es-ES", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
     },
     async fetchPlanes() {
       try {
@@ -196,94 +168,54 @@ export default {
         console.error("Error fetching Planes:", error);
       }
     },
+    openCreateDialog() {
+      this.newPlan = { id_plan: "", nombre: "", precio: 0, creditos: 0, descripcion: "" };
+      this.createDialog = true;
+      this.showAlert = false;
+    },
+    async savePlan() {
+      try {
+        const planData = { ...this.newPlan, fecha_modificacion: new Date().toISOString() };
+        await axios.post("http://localhost:8000/plans", planData);
+        this.createDialog = false;
+        this.fetchPlanes();
+      } catch (error) {
+        this.errorMessage = error.response?.data?.detail || "Error al guardar el plan.";
+        this.showAlert = true;
+      }
+    },
     showEdit(plan) {
       this.selectedPlan = plan;
       this.dialog = true;
     },
-    openCreateDialog() {
-      this.newPlan = { codigo: "", plan: "", precio: 0, creditos: 0 }; // Resetea el formulario
-      this.createDialog = true;
-      this.showAlert = false;
-    },
-
     async updatePlan() {
-  try {
-    const now = new Date();
-    this.selectedPlan.fecha_modificacion = now.toLocaleString("es-ES", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        });
-
-    // Envía la solicitud PUT al backend
-    await axios.post(
-      `http://localhost:8000/plans/${this.selectedPlan.id_plan}`,
-      this.selectedPlan
-    );
-
-    this.dialog = false;
-    this.fetchPlanes(); // Recarga la lista de planes
-  } catch (error) {
-    console.error("Error updating Plan:", error);
-  }
-  },
-  async savePlan() {
-  try {
-    const now = new Date();
-    const planData = {
-      id_plan: this.newPlan.id_plan, // Asegúrate de que coincida con el modelo
-      nombre: this.newPlan.nombre,
-      precio: this.newPlan.precio,
-      descripcion: this.newPlan.descripcion,
-      creditos: this.newPlan.creditos,
-      fecha_modificacion: now.toLocaleString("es-ES", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }), // Formato ISO 8601
-    };
-
-    await axios.post("http://localhost:8000/plans", planData);
-
-    this.createDialog = false;
-    this.fetchPlanes(); // Recarga la lista de planes
-  } catch (error) {
-    this.errorMessage = error.response?.data?.detail || "Ocurrió un error al guardar el plan.";
-    this.showAlert = true;
-  }
-},
-
-
-    async deletePlan() {
-    try {
-      await axios.delete(
-        `http://localhost:8000/plans/${this.selectedPlan.id_plan}`
-      );
-      this.dialog = false;
-      this.fetchPlanes(); // Recargar la lista de planes
-    } catch (error) {
-      console.error("Error deleting Plan:", error.response.data);
-    }
-  },
-
-    formatCurrency(amount) {
-      return new Intl.NumberFormat("es-ES", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
+      try {
+        this.selectedPlan.fecha_modificacion = new Date().toISOString();
+        await axios.post(`http://localhost:8000/plans/${this.selectedPlan.id_plan}`, this.selectedPlan);
+        this.dialog = false;
+        this.fetchPlanes();
+      } catch (error) {
+        console.error("Error updating Plan:", error);
+      }
+    },
+    openDeleteDialog(plan) {
+      this.selectedPlan = plan;
+      this.deleteDialog = true;
+    },
+    async confirmDeletePlan() {
+      try {
+        await axios.delete(`http://localhost:8000/plans/${this.selectedPlan.id_plan}`);
+        this.dialog = false;
+        this.deleteDialog = false;
+        this.fetchPlanes();
+      } catch (error) {
+        console.error("Error deleting Plan:", error.response?.data || error);
+      }
     },
   },
-  mounted() {
-    this.fetchPlanes();
-  },
-}
+};
 </script>
+
 
 
 <style scoped>

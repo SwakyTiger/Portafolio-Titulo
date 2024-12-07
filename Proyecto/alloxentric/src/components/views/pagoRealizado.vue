@@ -31,6 +31,12 @@
               <v-list-item-subtitle class="text-h6 font-weight-bold">{{ userEmail }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title class="text-h6 font-weight-bold">Numero de Telefono</v-list-item-title>
+              <v-list-item-subtitle class="text-h6 font-weight-bold">{{ numeroTelefono }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
         </v-list>
         <v-alert v-else-if="error" type="error">
           {{ error }}
@@ -52,6 +58,7 @@ export default {
       price: '',
       userName: '',
       userEmail: '',
+      numeroTelefono: '',
       dataLoaded: false,
       error: null
     };
@@ -88,6 +95,7 @@ export default {
           this.price = data.price ? data.price.toFixed(2) : 'No disponible';
           this.userName = fullName || 'No disponible';  // Mostrar nombre de usuario
           this.userEmail = data.userEmail || 'No disponible';
+          this.numeroTelefono = keycloak.tokenParsed?.telefono || 'No disponible';
           this.dataLoaded = true;
           // Registrar la venta en la base de datos
           await this.recordSale(sessionId); // Llama al endpoint para registrar la venta

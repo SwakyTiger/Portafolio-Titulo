@@ -195,11 +195,27 @@ async def record_sale(session_id: str, request: Request):
         }
         logging.info(f"Datos de venta a insertar: {venta}")
 
+        existing_sale = conn.alloxentric_db.ventas.find_one({"session_id": session_id})
+        if existing_sale:
+            return {
+                "message": "La venta ya fue registrada.",
+                "data": existing_sale
+            }
+        else:
+            conn.alloxentric_db.ventas.insert_one(venta)
+
+        # Verificar si ya existe una suscripción con el mismo id_suscripcion
+        existing_subscription = conn.alloxentric_db.suscripciones.find_one({"id_suscripcion": suscripcion_id})
+        if existing_subscription:
+             return {
+                "message": "La suscripcion ya fue registrada.",
+                "data": existing_subscription
+            }
+        else:
+            conn.alloxentric_db.suscripciones.insert_one(suscripcion)
+
         # Insertar la venta en MongoDB
-        conn.alloxentric_db.ventas.insert_one(venta)
-        conn.alloxentric_db.suscripciones.insert_one(suscripcion)
-
-
+        
     except stripe.error.StripeError as e:
         logging.error(f"Stripe error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))

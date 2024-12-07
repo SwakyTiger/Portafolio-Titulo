@@ -185,7 +185,7 @@ methods: {
       });
 
       // Filtrar los planes para que solo se muestren los que tienen un precio mayor al plan actual
-      this.availablePlans = response.data.filter(plan => plan.precio > this.subscription.total_pagado);
+      this.availablePlans = response.data.filter(plan => plan.precio >= this.subscription.total_pagado);
 
       this.showAlert = this.availablePlans.length === 0;
     } catch (error) {
@@ -224,6 +224,7 @@ methods: {
       }
 
       this.isCancelDialogOpen = false;
+      window.location.reload();
     } catch (error) {
       console.error("Error al cancelar la suscripción:", error);
      
