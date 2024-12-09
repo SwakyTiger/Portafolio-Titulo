@@ -26,10 +26,10 @@ load_dotenv()
 def find_all_usuarios():
     return usuariosEntity(conn.alloxentric_db.usuario.find())
 
-@bot.get('/bot/{email}/{username}', tags=["bot"])
-def find_usuario(email: str, username: str):
+@bot.get('/bot/{numero_telefono}', tags=["bot"])
+def find_usuario(numero_telefono: int):
     # 1. Obtener el usuario con el número de teléfono
-    usuario = conn.alloxentric_db.usuario.find_one({"email": email, "username": username})
+    usuario = conn.alloxentric_db.usuario.find_one({"numero_telefono": numero_telefono})
     
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -65,9 +65,6 @@ def find_usuario(email: str, username: str):
         "suscripciones": suscripciones_info
     }
 
-
-
-
 @bot.post("/transcribir-audio-2/", tags=["bot"])
 async def transcribir_audio(audio_url: str):
     os.makedirs('temp', exist_ok=True)
@@ -99,10 +96,12 @@ async def transcribir_audio(audio_url: str):
         if result.returncode != 0:
             raise HTTPException(status_code=500, detail=f"Error al ejecutar el script de transcripción: {result.stderr.strip()}")
 
-        return {"transcripcion": transcripcion}
+        return {"transcripcion": transcripcion, "es_audio": True}
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Si ocurre un error, devolver un objeto que indique que es texto
+        return {"detail": str(e), "es_audio": False}
+    
 
 
 @bot.post("/transcribir-audio/", tags=["bot"])
@@ -188,3 +187,20 @@ def guardar_transcrito(
 
     # 4. Retornar una respuesta
     return {"mensaje": "Transcripción guardada exitosamente", "id": str(resultado.inserted_id)}
+
+
+@bot.get('/separarMensaje_numero', tags=['bot'])
+def separarMensaje(mensaje: str):
+    print(f"Se recibe mensaje para ser separado: {mensaje}")
+    mensaje_separado = mensaje.split('* | * ')
+    print(f"TELEFONO: {mensaje_separado[-1]}")
+    
+    return {'telefono': mensaje_separado[-1]}
+
+@bot.get('/separarMensaje_msg', tags=['bot'])
+def separarMensaje(mensaje: str):
+    print(f"Se recibe mensaje para ser separado: {mensaje}")
+    mensaje_separado = mensaje.split('* | * ')
+    print(f"MENSAJE: {mensaje_separado[0]}")
+    
+    return {'mensaje': mensaje_separado[0]}
