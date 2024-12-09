@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - mynetwork
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+    networks:
+      - mynetwork
+
+  frontend:
+    build:
+      context: ./alloxentric
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "8080:80"
+    networks:
+      - mynetwork
+    depends_on:
+      - backend
+
+networks:
+  mynetwork:
+    driver: bridge

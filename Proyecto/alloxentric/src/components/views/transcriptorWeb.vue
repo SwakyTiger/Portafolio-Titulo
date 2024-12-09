@@ -130,13 +130,13 @@ export default {
         const token = keycloak.tokenParsed;
         //const phonePrefix = token.prefijo || '';
         this.username = token.preferred_username
-        this.email = token.email
+        this.telefono = token.telefono
         await this.obtenerInformacionUsuario();
       }
     },
     async obtenerInformacionUsuario() {
       try {
-        const response = await axios.get(`http://localhost:8000/bot/${this.email}/${this.username}`);
+        const response = await axios.get(`http://localhost:8000/bot/${this.telefono}`);
         const usuario = response.data.usuario;
         const suscripciones = response.data.suscripciones;
         
