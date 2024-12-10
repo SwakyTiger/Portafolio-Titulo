@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, File, UploadFile,  Query
 from src.config.db import conn
 from ..schemas.schemas import usuariosEntity
+import re
 
 import subprocess
 import requests
@@ -27,9 +28,15 @@ def find_all_usuarios():
     return usuariosEntity(conn.alloxentric_db.usuario.find())
 
 @bot.get('/bot/{numero_telefono}', tags=["bot"])
-def find_usuario(numero_telefono: int):
-    # 1. Obtener el usuario con el número de teléfono
-    usuario = conn.alloxentric_db.usuario.find_one({"numero_telefono": numero_telefono})
+def find_usuario(numero_telefono: str):
+    # Verifica que el número tenga el formato esperado
+    if not numero_telefono.startswith("+") or len(numero_telefono) < 5:
+        raise HTTPException(status_code=400, detail="Número de teléfono inválido. Debe incluir el prefijo con '+'.")
+
+    # 1. Crear un campo combinado y buscar el usuario
+    usuario = conn.alloxentric_db.usuario.find_one(
+        {"$expr": {"$eq": [{"$concat": ["$prefijo", {"$toString": "$numero_telefono"}]}, numero_telefono]}}
+    )
     
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -45,7 +52,7 @@ def find_usuario(numero_telefono: int):
         "username": usuario.get("username"),
         "nombre": usuario.get("nombre"),
         "apellido": usuario.get("apellido"),
-        "numero_telefono": usuario.get("numero_telefono"),
+        "numero_telefono": f"{usuario.get('prefijo')}{usuario.get('numero_telefono')}",
         "email": usuario.get("email")
     }
 
@@ -64,6 +71,7 @@ def find_usuario(numero_telefono: int):
         "usuario": usuario_info,
         "suscripciones": suscripciones_info
     }
+
 
 @bot.post("/transcribir-audio-2/", tags=["bot"])
 async def transcribir_audio(audio_url: str):
@@ -190,17 +198,26 @@ def guardar_transcrito(
 
 
 @bot.get('/separarMensaje_numero', tags=['bot'])
-def separarMensaje(mensaje: str):
+def separarMensaje_numero(mensaje: str):
     print(f"Se recibe mensaje para ser separado: {mensaje}")
-    mensaje_separado = mensaje.split('* | * ')
-    print(f"TELEFONO: {mensaje_separado[-1]}")
     
-    return {'telefono': mensaje_separado[-1]}
-
+    # Separar usando múltiples delimitadores
+    mensaje_separado = re.split(r'\*\|\*|\* \| \*', mensaje)
+    
+    # Obtener el último elemento (número de teléfono)
+    telefono = mensaje_separado[-1].strip()
+    print(f"TELEFONO: {telefono}")
+    
+    return {'telefono': telefono}
 @bot.get('/separarMensaje_msg', tags=['bot'])
 def separarMensaje(mensaje: str):
     print(f"Se recibe mensaje para ser separado: {mensaje}")
-    mensaje_separado = mensaje.split('* | * ')
-    print(f"MENSAJE: {mensaje_separado[0]}")
     
-    return {'mensaje': mensaje_separado[0]}
+    # Separar usando múltiples delimitadores
+    mensaje_separado = re.split(r'\*\|\*|\* \| \*', mensaje)
+    
+    # Obtener el primer elemento (mensaje)
+    mensaje_texto = mensaje_separado[0].strip()
+    print(f"MENSAJE: {mensaje_texto}")
+    
+    return {'mensaje': mensaje_texto}

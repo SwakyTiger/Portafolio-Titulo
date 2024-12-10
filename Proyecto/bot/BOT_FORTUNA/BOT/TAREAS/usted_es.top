@@ -1,7 +1,6 @@
 ﻿topic: ~ustedEs keep repeat ()
 
-t: (!$sp)
-        $sp = 0      
+t: () 
         $x = ^jsoncreate(TRANSIENT object)
                 $x.intencionContacto =  None
                 $x.intencionBot = SALUDO
@@ -11,7 +10,84 @@ t: (!$sp)
                 $x.argumentoComando.codigo = NC
         [^jsonwrite($x)]
         
-        Hola $$nombre 
+        Bienvenido a Transcriptor Alloxentric ⭐ $br
+        $mensaje = $firstmsghandled
+
+        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/separarMensaje_numero" 
+        $_header = ^"accept: application/json"
+        $_url = ^join($_endpoint ? mensaje = $mensaje)
+        $$dato = ^jsonopen(direct GET $_url "" $_header)
+        $$dato =  ^jsonparse(transient NOFAIL $$dato )
+        $numero_tel = $$dato.telefono
+
+        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/separarMensaje_msg" 
+        $_header = ^"accept: application/json"
+        $_url = ^join($_endpoint ? mensaje = $mensaje)
+        $$dato = ^jsonopen(direct GET $_url "" $_header)
+        $$dato =  ^jsonparse(transient NOFAIL $$dato )
+        $mensaje = $$dato.mensaje
+
+
+        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/bot" 
+        $_header = ^"accept: application/json"
+        $_url = ^join($_endpoint / $numero_tel)
+        $$dato = ^jsonopen(direct GET $_url "" $_header)
+        $$dato =  ^jsonparse(transient NOFAIL $$dato )
+        $detail = $$dato.detail
+        $username = $$dato.usuario.username
+        $$nombre = $$dato.usuario.nombre
+        $id_usuario = $$dato.usuario.id_usuario
+        $creditos = $$dato.suscripciones.creditos
+        if($detail != null){
+                Usuario no encontrado. Por favor asegurate de tener una cuenta en creada en nuestro sitio web. $br
+                $estado = ~ustedEs
+        }else{
+                if($creditos == null){
+                        No tienes créditos disponibles para transcribir. Por favor, compra o actualiza un plan para continuar $br
+                        $estado = ~menu
+                }else if($creditos != 0){
+                        if($mensaje != null){
+                                # Llamar al endpoint de transcripción
+                                $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/transcribir-audio-2/"
+                                $_url = ^join($_endpoint ? audio_url = $mensaje)
+                                $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+
+                                # Aquí debes enviar el archivo de audio al endpoint
+                                $$response = ^jsonopen(direct POST $_url "" $_header)
+                                $$data = ^jsonparse(transient NOFAIL $$response)
+                                $respuesta = $$data.es_audio
+                                if($respuesta== false){
+                                        $estado = ~menu 
+                                } else {
+                                        $transcripcion = $$data.transcripcion
+                                        La transcripción del audio es: $br 
+                                        $transcripcion $br 
+
+                                        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/restar-creditos"
+                                        $_url = ^join($_endpoint / $username)
+                                        $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+                                        $$data = ^jsonopen(direct PUT $_url "" $_header)
+
+                                        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/guardar-transcrito"
+                                        $_url = ^join($_endpoint ? id_usuario = $id_usuario & username = $username & transcrito = $transcripcion)
+                                        $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+                                        $$data = ^jsonopen(direct POST $_url "" $_header)
+
+                                        $estado = ~algo_mas
+                                }
+                                
+                        }else {
+                                Disculpa no pude entenderlo, valida que sea un audio correcto. $br 
+                                $estado = ~transcribirAudio
+                        }
+                }else {
+                        No tienes créditos disponibles para transcribir. Por favor, compra o actualiza un plan para continuar $br
+                        $estado = ~menu
+                }
+        }
+
+# TOPIC MENU
+topic: ~menu keep repeat ()
 
 u: () 	
 	$x = ^jsoncreate(TRANSIENT object)
@@ -21,12 +97,14 @@ u: ()
         [^jsonwrite($x)]
 
         ¿Que deseas realizar? $br
+        Ingresa el número de tu opción: $br
         1. Transcribir un audio $br
         2. Contratar algun plan $br
         3. Ir a los ajustes de tu Cuenta $br
         $br
 	
-a: BUZON ( ~buzonc )
+a: (_*)
+        $opcion = '_0
         $x = ^jsoncreate(TRANSIENT object)
                 $x.intencionContacto =  BUZON
                 $x.intencionBot = FINALIZAR_CONVERSACION
@@ -35,136 +113,100 @@ a: BUZON ( ~buzonc )
                 $x.argumentoComando.tipificacion = BUZON
                 $x.argumentoComando.codigo = BZ
         [^jsonwrite($x)]
-        Disculpe la molestia. ^jsonundecodestring(%$) ^respond(~adios)
 
+        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/separarMensaje_msg" 
+        $_header = ^"accept: application/json"
+        $_url = ^join($_endpoint ? mensaje = $opcion )
+        $$dato = ^jsonopen(direct GET $_url "" $_header)
+        $$dato =  ^jsonparse(transient NOFAIL $$dato )
+        $opcion = $$dato.mensaje
 
-a: OPCION_1 ( < [ ~unoc ] >) 
-	$x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto = REQUIERE_AYUDA
-                $x.intencionBot = DERIVA_ASESOR
-                $x.comandoAcanal = TRANSFERIR_CONVERSACION
-                $x.destinoTransferencia = $anexo
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = REQUIERE_AYUDA
-                $x.argumentoComando.codigo = RA
-        [^jsonwrite($x)]
-        $_endpoint = ^"http://host.docker.internal:8000/bot"
-        $_url = ^join($_endpoint / $numero_telefono)
-        $_header = ^" ~Accept: application/json ~Content-Type: application/json "
-        $$datae = ^jsonopen(direct GET $_url "" "")
-        $$data = ^jsonparse(transient NOFAIL $$datae)
-
-        # Acceder a la primera suscripción
-        $id_plan = $$data.suscripciones.id_plan
-        $estado_plan = $$data.suscripciones.estado
-        $creditos = $$data.suscripciones.creditos
-        if($creditos == 0){
-		Sin creditos para transcribir, actualice su plan.
-                $estado = ~ustedEs  # Cambia al topic de transcripción
-                ^respond(~ustedEs)  # Asegúrate de responder correctamente
-	}else{
-		$estado = ~transcribirAudio  # Cambia al topic de transcripción
-                ^respond(~transcribirAudio)  # Asegúrate de responder correctamente
+        if($opcion == 1){
+                $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/bot" 
+                $_header = ^"accept: application/json"
+                $_url = ^join($_endpoint / $numero_tel)
+                $$dato = ^jsonopen(direct GET $_url "" $_header)
+                $$dato =  ^jsonparse(transient NOFAIL $$dato )
+                $username = $$dato.usuario.username
+                $$nombre = $$dato.usuario.nombre
+                $id_usuario = $$dato.usuario.id_usuario
+                $creditos = $$dato.suscripciones.creditos
+                
+                if($creditos == null){
+                        No tienes créditos disponibles para transcribir. Por favor, compra o actualiza un plan para continuar $br
+                        $estado = ~menu
+                }else if($creditos != 0){
+                        $estado = ~transcribirAudio
+                }else {
+                        No tienes créditos disponibles para transcribir. Por favor, compra o actualiza un plan para continuar $br
+                        $estado = ~menu
+                }
+		        
+	}else if($opcion == 2){
+		Para contratar un plan, encontrarás el catalogo de planes para nuestro Transcriptor en el siguiente link http://localhost:8080/planDetails . $br
+	        $estado = ~algo_mas 
+	}else if($opcion == 3){
+		Para acceder a los ajustes de tu cuenta ingrese al siguiente link: http://localhost:8080/miCuenta, asegúrate de iniciar sesion. $br
+	        $estado = ~algo_mas
+	}else {
+		La opción ingresada no es válida. $br
+		$estado = ~menu
 	}
+ 
+
+# TOPIC TRANSCRIBIR PARA AUDIO A TEXTO
+topic: ~transcribirAudio keep repeat ()
+ 
+
+u: ()  # Captura cualquier otra entrada que no sea el comando específico  
+    $nombre, tienes un total de $creditos creditos en tu cuenta de transcripción. $br
+    Por favor, envía el audio que deseas transcribir. $br
+
+a: (_*)
+
+        $audioFile = '_0
+        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/separarMensaje_msg" 
+        $_header = ^"accept: application/json"
+        $_url = ^join($_endpoint ? mensaje = $audioFile )
+        $$dato = ^jsonopen(direct GET $_url "" $_header)
+        $$dato =  ^jsonparse(transient NOFAIL $$dato )
+        $audioFile = $$dato.mensaje
+
+        if($audioFile != null)
+        {# Llamar al endpoint de transcripción
+        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/transcribir-audio-2/"
+        $_url = ^join($_endpoint ? audio_url = $audioFile)
+        $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+
+        # Aquí debes enviar el archivo de audio al endpoint
+        $$response = ^jsonopen(direct POST $_url "" $_header)
+        $$data = ^jsonparse(transient NOFAIL $$response)
+
+        # Procesar la respuesta
+        $transcripcion = $$data.transcripcion
         
-	$sp = null	
+        La transcripción del audio es: $br
+        $transcripcion $br
 
-a: OPCION_2 ( < [ ~dosc ] >) 
-	$x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto = REQUIERE_AYUDA
-                $x.intencionBot = DERIVA_ASESOR
-                $x.comandoAcanal = TRANSFERIR_CONVERSACION
-                $x.destinoTransferencia = $anexo
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = REQUIERE_AYUDA
-                $x.argumentoComando.codigo = RA
-        [^jsonwrite($x)]
-        Para contratar algun plan, ingrese al siguiente link http://localhost:8080/planDetails .
-	$estado = ~algo_mas 
-	$sp = null	
-	
-a: OPCION_3 ( < [ ~tresc ] >) 
-	$x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto = REQUIERE_AYUDA
-                $x.intencionBot = DERIVA_ASESOR
-                $x.comandoAcanal = TRANSFERIR_CONVERSACION
-                $x.destinoTransferencia = $anexo
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = REQUIERE_AYUDA
-                $x.argumentoComando.codigo = RA
-        [^jsonwrite($x)]
-        Para acceder a los ajustes de su cuenta ingrese al siguiente link: http://localhost:8080/miCuenta, asegurese de iniciar sesion.
-	$estado = ~algo_mas
-	$sp = null	
+        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/restar-creditos"
+        $_url = ^join($_endpoint / $username)
+        $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+        $$data = ^jsonopen(direct PUT $_url "" $_header)
 
-a: NEGATIVA ( *~2 [ ~noc ~equivocadoc 0 ]) 
-        $x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto = NO_REQUIERE_AYUDA
-                $x.intencionBot = CONSULTAR_CANALES
-                $x.comandoAcanal = None
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = NO_RECIBE
-                $x.argumentoComando.codigo = NRA
-        [^jsonwrite($x)]
-        $sp = null
-        $estado = ~check_canales
-	
-a: MENSAJE-VACIO  (%length==0 $sp>1) 
-	$x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  MENSAJE_VACIO
-                $x.intencionBot = FINALIZAR_CONVERSACION
-                $x.comandoAcanal = FINALIZAR_CONVERSACION
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = NO_RESPONDE
-                $x.argumentoComando.codigo = NR
-        [^jsonwrite($x)]
-	Disculpa, tenemos problemas con el audio, volveremos a llamar. ^jsonundecodestring(%$)  ^respond(~adios)
 
-a: MENSAJE-DESCONOCIDO ($sp>1) 
-	$x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  MENSAJE_DESCONOCIDO
-                $x.intencionBot = FINALIZAR_CONVERSACION
-                $x.comandoAcanal = FINALIZAR_CONVERSACION
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = NO_ENTIENDE
-                $x.argumentoComando.codigo = NE
-        [^jsonwrite($x)]
-	Disculpa, tenemos problemas con el audio, volveremos a llamar. ^jsonundecodestring(%$)  ^respond(~adios)
+        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/guardar-transcrito"
+        $_url = ^join($_endpoint ? id_usuario = $id_usuario & username = $username & transcrito = $transcripcion)
+        $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+        $$data = ^jsonopen(direct POST $_url "" $_header)
 
-a: MENSAJE-VACIO     (%length==0)   $sp += 1	
-	$x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  MENSAJE_VACIO
-                $x.intencionBot = SALUDO
-                $x.comandoAcanal = None
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = NO_RESPONDE
-                $x.argumentoComando.codigo = NR
-        [^jsonwrite($x)]
-	Disculpa, no le entendi, por favor responda con una de las opciones 1, 2 o 3.
-	$estado = ~ustedEs
+        $estado = ~algo_mas }else {
+                Disculpa no pude entenderlo, valida que sea un audio correcto.$br
+                $estado = ~transcribirAudio
+}
 
-a: MENSAJE-DESCONOCIDO ( )  $sp += 1	
-	$x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  MENSAJE_DESCONOCIDO
-                $x.intencionBot = SALUDO
-                $x.comandoAcanal = None
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = NO_ENTIENDE
-                $x.argumentoComando.codigo = NE
-	[^jsonwrite($x)]
-	Disculpa, no le entendi, por favor responda con una de las opciones 1, 2 o 3.
-	$estado = ~ustedEs
 
 # TOPICO DE CONSULTAR SI EL USUARIO DESEA HACER ALGO MAS
 topic: ~algo_mas keep repeat ()
-
-t: ()
-        $x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  None
-                $x.intencionBot = CONSULTA_ASESORIA
-                $x.comandoAcanal = None
-        [^jsonwrite($x)]
-        
 
 u: ()
         $x = ^jsoncreate(TRANSIENT object)
@@ -172,92 +214,50 @@ u: ()
                 $x.intencionBot = CONSULTA_ASESORIA
                 $x.comandoAcanal = None
         [^jsonwrite($x)]
-        ¿Desea realizar algo mas (si/no)?
+        ¿Deseas realizar algo mas? $br
+        Ingresa el número de tu opción: $br
+	1. *Si* $br
+	2. *No* $br
 
-a: BUZON ( ~buzonc )
-        $x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  BUZON
-                $x.intencionBot = FINALIZAR_CONVERSACION
-                $x.comandoAcanal = FINALIZAR_CONVERSACION
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = BUZON
-                $x.argumentoComando.codigo = BZ
-        [^jsonwrite($x)]
-        Disculpe las molestias. ^jsonundecodestring(%$) 
-        ^respond(~adios)
+a: (_*)
+	$algo_mas = '_0
+	$x = ^jsoncreate(TRANSIENT object)
+	$x.intencionContacto = DIGITAR_MAIL
+	$x.intencionBot = OBTENER_MAIL
+	$x.comandoAcanal = None
+	$x.comandoReporteria = TIPIFICAR_CONVERSACION
+	$x.argumentoComando.tipificacion = DIGITAR_MAIL
+	$x.argumentoComando.codigo = DM
+	[^jsonwrite($x)]
 
-a: POSITIVA-2 ( [ ~sic  1 ])       
-        $x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  CONOCE_CANALES
-                $x.intencionBot = FINALIZAR_CONVERSACION
-                $x.comandoAcanal = FINALIZAR_CONVERSACION
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = CONOCE_CANALES
-                $x.argumentoComando.codigo = CC
-        [^jsonwrite($x)]
-        $estado = ~ustedEs
+        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/separarMensaje_msg" 
+        $_header = ^"accept: application/json"
+        $_url = ^join($_endpoint ? mensaje = $algo_mas )
+        $$dato = ^jsonopen(direct GET $_url "" $_header)
+        $$dato =  ^jsonparse(transient NOFAIL $$dato )
+        $algo_mas = $$dato.mensaje
+        
+        if($algo_mas == 1){
+        $estado = ~Menu
+        }else if($algo_mas == 2){
+        $estado = ~termino
+        }else{
+        No entendi tu respuesta.
+        $estado = ~algo_mas
+        }
 
-a: RECHAZA-2 ([0 ~noc])
-        $x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  DESCONOCE_CANALES
-                $x.intencionBot = FINALIZAR_CONVERSACION
-                $x.comandoAcanal = FINALIZAR_CONVERSACION
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = DESCONOCE_CANALES
-                $x.argumentoComando.codigo = DC
-        [^jsonwrite($x)]
+# TOPIC PARA TERMINAR FLUJO
+topic: ~termino keep repeat()
 
-        ^respond(~adios)
-
-a: MENSAJE-VACIO (%length==0 $sp<=1)
-        $x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  MENSAJE_VACIO
-                $x.intencionBot = CONSULTA_ASESORIA
-                $x.comandoAcanal = None
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = NO_RESPONDE
-                $x.argumentoComando.codigo = NR
-        [^jsonwrite($x)]
-        $sp += 1
-        Disculpa, no le entendi ^jsonundecodestring(%$)
-        $estado = ~check_canales
-
-a: MENSAJE-DESCONOCIDO ($sp<=1)
-        $x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  MENSAJE_DESCONOCIDO
-                $x.intencionBot = CONSULTA_ASESORIA
-                $x.comandoAcanal = None
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = NO_ENTIENDE
-                $x.argumentoComando.codigo = NE
-        [^jsonwrite($x)]
-
-        $sp += 1
-        Disculpa, no le entendi ^jsonundecodestring(%$)
-        $estado = ~check_canales
-
-
-a: MENSAJE-VACIO (%length==0 $sp>1)
-        $x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  MENSAJE_VACIO
-                $x.intencionBot = FINALIZAR_CONVERSACION
-                $x.comandoAcanal = FINALIZAR_CONVERSACION
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = NO_RESPONDE
-                $x.argumentoComando.codigo = NR
-        [^jsonwrite($x)]
-        Disculpa, tenemos problemas con el audio, volveremos a llamar. ^jsonundecodestring(%$)
-        ^respond(~adios)
-
-a: MENSAJE-DESCONOCIDO ($sp>1)
-        $x = ^jsoncreate(TRANSIENT object)
-                $x.intencionContacto =  MENSAJE_DESCONOCIDO
-                $x.intencionBot = FINALIZAR_CONVERSACION
-                $x.comandoAcanal = FINALIZAR_CONVERSACION
-                $x.comandoReporteria = TIPIFICAR_CONVERSACION
-                $x.argumentoComando.tipificacion = NO_ENTIENDE
-                $x.argumentoComando.codigo = NE
-        [^jsonwrite($x)]
-        Disculpa, tenemos problemas con el audio, volveremos a llamar. ^jsonundecodestring(%$)
-        ^respond(~adios)
-
+u: ()
+	$x = ^jsoncreate(TRANSIENT object)
+	$x.intencionContacto =  None
+	$x.intencionBot = TERMINO
+	$x.comandoAcanal = FINALIZAR_CONVERSACION
+	$x.comandoReporteria = TIPIFICAR_CONVERSACION
+	$x.argumentoComando.tipificacion = TERMINO
+	$x.argumentoComando.codigo = T
+	[^jsonwrite($x)]
+	De acuerdo, hasta aquí llego yo. $br
+	Hasta luego 😉 $br
+	$estado = ~null

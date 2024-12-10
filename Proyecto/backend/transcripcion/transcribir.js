@@ -23,8 +23,6 @@ async function transcribirAudio(rutaArchivo) {
             model: 'whisper-large-v3',
             prompt: 'Especifica contexto o nombres',
             response_format: 'json',
-            language: 'es',
-            temperature: 0.0,
         });
         return transcription.text; // Retornar la transcripción
     } catch (error) {

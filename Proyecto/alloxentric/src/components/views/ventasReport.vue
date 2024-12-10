@@ -14,7 +14,7 @@
             <v-select v-model="selectedMonth" :items="months" label="Mes" outlined dense
               @change="filterVentas"></v-select>
           </v-col>
-        </v-row>  
+        </v-row>
 
         <v-data-table :headers="headers" :items="filteredVentas" :items-per-page="10" v-model:page="page"
           class="elevation-1">
@@ -220,12 +220,20 @@ export default {
           theme: 'grid',
         });
 
-        doc.text(`Total de ventas: ${this.formatCurrency(this.totalVenta  / 100)}`, 14, doc.lastAutoTable.finalY + 10);
+        doc.text(`Total de ventas: ${this.formatCurrency(this.totalVenta / 100)}`, 14, doc.lastAutoTable.finalY + 10);
         doc.save('reporte_ventas.pdf');
       } catch (error) {
         console.error('Error generating PDF:', error);
         this.$toast.error('Error al generar el PDF');
       }
+    },
+  },
+  watch: {
+    filteredVentas: {
+      handler() {
+        this.calculateTotalVenta();
+      },
+      immediate: true, // Para que se ejecute al cargar el componente
     },
   },
   mounted() {
