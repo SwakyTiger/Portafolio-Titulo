@@ -4,7 +4,7 @@
       <router-link  to="/" class="d-flex align-center" >
           <img :src="require('@/assets/alloxentric_logo_only.png')" alt="Alloxentric Logo" class="custom-logo" />
       </router-link>
-      <v-container class="d-flex align-center">
+      <v-container class="d-flex align-center" style="margin-right: 0px;">
         
 
         <nav class="d-none d-md-flex align-center">
@@ -14,14 +14,28 @@
           <v-btn v-if="!isAuthenticated" text
             href="http://localhost:8081/realms/Transcriptor/protocol/openid-connect/registrations?client_id=transcriptor_alloxentric&response_type=code&scope=openid&redirect_uri=http://localhost:8080/"
             color="#42b983">Registrarse</v-btn>
-          <v-btn v-if="isAdmin" text to="/CuadraturaMensual" color="#42b983"><v-icon>mdi-calculator</v-icon>Cuadratura Mensual</v-btn>
-          <v-btn v-if="isAdmin" text to="/crudPlanes" color="#42b983"><v-icon>mdi-view-list</v-icon>Administrador de Planes</v-btn>
-          <v-btn v-if="isAdmin" text to="/ventasReport" color="#42b983"><v-icon>mdi-chart-bar</v-icon>Administrador de Ventas</v-btn>
-          <v-btn v-if="isAdmin" text to="/dashboard" color="#42b983"><v-icon>mdi mdi-monitor-dashboard</v-icon>Dashboard</v-btn>
+          <v-btn v-if="isAuthenticated" text to="/transcriptorWeb" color="#42b983"><v-icon>mdi-text-to-speech</v-icon>Transcriptor Web</v-btn>
+          
+          <v-menu v-if="isAdmin" transition="slide-y-transition">
+            <template v-slot:activator="{ props }">
+              <v-btn color="#42b983" v-bind="props" >
+                Administrador <v-icon class="mdi mdi-menu-down"></v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item
+                v-for="(item, i) in menuItems"
+                :key="i"
+                @click="navigate(item.to)"
+              >
+                <v-list-item-title>{{ item.title }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+
           <v-btn v-if="!isAuthenticated" text @click="handleAuthAction" id="authButton" color="#42b983">
             Iniciar Sesión
           </v-btn>
-          <v-btn v-if="isAuthenticated" text to="/transcriptorWeb" color="#42b983"><v-icon>mdi-text-to-speech</v-icon>Transcriptor Web</v-btn>
           <v-btn v-if="isAuthenticated" text to="/miCuenta" class="d-flex align-center">
             <v-list-item lines="two" :prepend-avatar="require('@/assets/icon-account.png')" subtitle="Bienvenido"
               :title="userName" class="custom-title"></v-list-item>
@@ -105,10 +119,19 @@ export default {
       drawer: false,
       isAuthenticated: false, // Estado de autenticación
       isAdmin: false, // Estado para verificar si el usuario es admin
-      userName: ''
+      userName: '',
+      menuItems: [
+        { title: "Cuadratura Mensual", to: "/CuadraturaMensual" },
+        { title: "Administrador de Planes", to: "/crudPlanes" },
+        { title: "Administrador de Ventas", to: "/ventasReport" },
+        { title: "Dashboard", to: "/dashboard" }
+      ]
     };
   },
   methods: {
+    navigate(route) {
+      this.$router.push(route); // Navega usando Vue Router
+    },
     handleAuthAction() {
       if (this.isAuthenticated) {
         keycloak.logout({
