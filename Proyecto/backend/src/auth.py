@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 from keycloak import KeycloakOpenID
 
 keycloak_openid = KeycloakOpenID(
-    server_url="http://34.176.251.141:8081", #se modifico para que funcione con docker, antes se usaba http://localhost:8081
+    server_url="http://host.docker.internal:8081", #se modifico para que funcione con docker, antes se usaba http://localhost:8081
     realm_name="Transcriptor",       # Nombre del realm utilizado
     client_id="transcriptor_alloxentric",    # ID del cliente 
 )
