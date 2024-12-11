@@ -87,10 +87,6 @@ export default {
         }
     },
     methods: {
-        handleLogin() {
-            
-            console.log('Intento de inicio de sesión con:', this.email, this.password)
-        },
         async get_user_data() {
     if (keycloak.authenticated) {
         const token = keycloak.tokenParsed;
@@ -105,49 +101,31 @@ export default {
             username: token.preferred_username || '',
         };
 
-        // Mostrar en consola para depuración
-        console.log('Datos del usuario autenticado:', userData);
-
         try {
             const response = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`);
 
             if (response.status === 404) {
                 // Usuario no existe, lo guardamos
-                const saveResponse = await fetch('http://localhost:8000/usuarios', {
+                await fetch('http://localhost:8000/usuarios', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(userData),
                 });
-
-                if (saveResponse.ok) {
-                    console.log('Usuario guardado correctamente');
-                } else {
-                    throw new Error('Error al guardar los datos del usuario');
-                }
             } else if (response.ok) {
                 // Usuario existe, verificamos cambios
                 const userInDb = await response.json();
                 const hasChanges = this.checkForChanges(userInDb, userData);
 
                 if (hasChanges) {
-                    console.log('Se detectaron cambios, actualizando usuario...');
-                    const updateResponse = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`, {
+                    await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`, {
                         method: 'PUT', 
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify(userData),
                     });
-
-                    if (updateResponse.ok) {
-                        console.log('Usuario actualizado correctamente');
-                    } else {
-                        throw new Error('Error al actualizar los datos del usuario');
-                    }
-                } else {
-                    console.log('No se detectaron cambios, no se actualiza el usuario.');
                 }
             } else {
                 throw new Error('Error al verificar el usuario en la base de datos');

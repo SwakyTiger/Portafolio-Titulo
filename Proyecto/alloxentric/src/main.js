@@ -11,13 +11,11 @@ loadFonts();
 keycloak.init({ 
   onLoad: 'check-sso',  // Cambia 'login-required' por 'check-sso'
   checkLoginIframe: true 
-}).then((authenticated) => {
+}).then(() => {
   const app = createApp(App);
   app.config.globalProperties.$keycloak = keycloak;
   app.use(router).use(vuetify).mount('#app');
-  if (!authenticated) {
-    console.log("Usuario no autenticado. Navegando como invitado.");
-  }
+
 }).catch((err) => {
   console.error("Error al inicializar Keycloak", err);
 });

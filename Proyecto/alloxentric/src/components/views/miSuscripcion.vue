@@ -157,7 +157,6 @@ methods: {
     }
   },
   handlePlanSelection(planId) {
-    console.log('Plan seleccionado:', planId);
     this.selectedPlan = planId;
   },
   confirmCancelSubscription() {
@@ -168,7 +167,6 @@ methods: {
     this.fetchAvailablePlans();
     this.isPlanDialogOpen = true;
     this.showAlert = false;
-    console.log(this.availablePlans.stripe_price_id)
     
   },
   formatDate(dateString) {
@@ -176,21 +174,18 @@ methods: {
       return new Date(dateString).toLocaleDateString('es-ES', options);
   },
   async fetchAvailablePlans() {
-    try {
-      // Llama al backend para obtener los planes disponibles
-      const response = await axios.get("http://localhost:8000/plans", {
-        headers: {
-          Authorization: `Bearer ${keycloak.token}`,
-        },
-      });
+    // Llama al backend para obtener los planes disponibles
+    const response = await axios.get("http://localhost:8000/plans", {
+      headers: {
+        Authorization: `Bearer ${keycloak.token}`,
+      },
+    });
 
-      // Filtrar los planes para que solo se muestren los que tienen un precio mayor al plan actual
-      this.availablePlans = response.data.filter(plan => plan.precio >= this.subscription.total_pagado);
+    // Filtrar los planes para que solo se muestren los que tienen un precio mayor al plan actual
+    this.availablePlans = response.data.filter(plan => plan.precio >= this.subscription.total_pagado);
 
-      this.showAlert = this.availablePlans.length === 0;
-    } catch (error) {
-      console.error("Error al obtener planes:", error);
-    }
+    this.showAlert = this.availablePlans.length === 0;
+
   },
   get_user_data() {
     if (keycloak.authenticated) {
@@ -215,11 +210,9 @@ methods: {
   },
   async performCancelSubscription() {
     try {
-      console.log(`Cancelar suscripción: ${this.subscription.id_suscripcion}`);
       const response = await axios.post(`http://localhost:8000/cancelar_suscripcion/${this.subscription.id_suscripcion}`);
       
       if (response.data.message) {
-        console.log(response.data.message);
         await this.fetchSubscriptionData();
       }
 
@@ -231,25 +224,22 @@ methods: {
     }
   },
 async updateSubscription() {
-  console.log('Iniciando actualización de suscripción');
-  console.log('Plan seleccionado:', this.selectedPlan);
-  console.log('Suscripción actual:', this.subscription.id_suscripcion);
-try {
-  const response = await axios.post(`http://localhost:8000/actualizar_suscripcion/${this.subscription.id_suscripcion}/${this.selectedPlan}`, {
-  headers: {
-    Authorization: `Bearer ${keycloak.token}`,
+  try {
+    const response = await axios.post(`http://localhost:8000/actualizar_suscripcion/${this.subscription.id_suscripcion}/${this.selectedPlan}`, {
+    headers: {
+      Authorization: `Bearer ${keycloak.token}`,
+    }
+    });
+    if (response.data) {
+          this.isPlanDialogOpen = false;
+          window.location.reload();
+        }
+    else {
+      this.showAlert = true;
+    }
+  } catch (error) {
+    console.error("Error al actualizar la suscripción:", error);
   }
-  });
-  if (response.data) {
-        this.isPlanDialogOpen = false;
-        window.location.reload();
-      }
-  else {
-    this.showAlert = true;
-  }
-} catch (error) {
-  console.error("Error al actualizar la suscripción:", error);
-}
 },
 async fetchSubscriptionData() {
   // Lógica para obtener los datos actualizados de las suscripciones del usuario

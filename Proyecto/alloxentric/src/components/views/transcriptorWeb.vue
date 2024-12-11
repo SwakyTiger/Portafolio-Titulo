@@ -153,7 +153,6 @@ export default {
       try {
         await axios.put(`http://localhost:8000/restar-creditos/${this.username}`);
         this.creditos -= 1; // Actualizar los créditos en el frontend
-        console.log("Crédito restado exitosamente.");
       } catch (error) {
         console.error("Error al restar crédito:", error);
         alert("No se pudo restar el crédito.");

@@ -33,10 +33,7 @@ export default {
     }
   },
   methods: {
-    handleLogin() {
-      // Aquí iría la lógica para manejar el inicio de sesión
-      console.log('Iniciar sesión con', this.phone, this.password);
-    }
+   
   }
 }
 </script>

@@ -91,11 +91,6 @@ export default {
             if (keycloak.authenticated) {
                 const token = keycloak.tokenParsed;
 
-                console.log(token);
-                for (const [key, value] of Object.entries(token)) {
-                    console.log(`${key}: ${value}`);
-                }
-
                 this.fullName = token.name;
                 this.userName = token.preferred_username || '';
                 this.email = token.email || '';
@@ -104,12 +99,6 @@ export default {
                 const phonePrefix = token.prefijo || '';
                 const phoneNumber = token.telefono || '';
                 this.phoneNumber = `${phonePrefix} ${phoneNumber}`.trim();
-
-                // Mostrar en la consola para depurar
-                console.log('Full Name:', this.fullName);
-                console.log('Username:', this.userName);
-                console.log('Email:', this.email);
-                console.log('Phone Number:', this.phoneNumber);
             }
         }
     },

@@ -76,7 +76,6 @@ export default {
         const lastName = keycloak.tokenParsed?.family_name || '';  // Usar el campo family_name si existe
         const fullName = `${firstName} ${lastName}`.trim();  // Formatear el nombre completo
         try {
-          console.log("Session ID:", sessionId); // Log para depuración
           
           const response = await fetch(`http://localhost:8000/payment-details?session_id=${sessionId}`);
           
@@ -88,7 +87,6 @@ export default {
 
           // Procesar la respuesta JSON
           const data = await response.json();
-          console.log("Received data:", data); // Log de los datos recibidos para depuración
 
           // Asignar los valores al estado local del componente
           this.planName = data.planName || 'No disponible';
@@ -132,8 +130,6 @@ export default {
           const errorText = await response.text();
           throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
-
-        console.log("Venta registrada exitosamente.");
       } catch (error) {
         console.error("Error al registrar la venta:", error);
       }

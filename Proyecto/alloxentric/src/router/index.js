@@ -113,7 +113,6 @@ function checkAdminRole() {
   if (keycloak.authenticated) {
     const token = keycloak.tokenParsed;
     const clientRoles = token.resource_access?.['transcriptor_alloxentric']?.roles || [];
-    console.log('Roles del cliente:', clientRoles); // Depuración
     return clientRoles.includes('admin');
   }
   return false;
@@ -124,26 +123,20 @@ router.beforeEach((to, from, next) => {
   // Verificar si la ruta requiere autenticación
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!keycloak.authenticated) {
-      console.log('No autenticado, redirigiendo al login.');
       keycloak.login(); // Redirigir al login si no está autenticado
     } else {
-      console.log('Usuario autenticado, permitiendo acceso.');
       next(); // Permitir acceso si está autenticado
     }
   } else if (to.matched.some(record => record.meta.requiresAdmin)) {
     // Verificar si la ruta requiere rol de admin
     if (!keycloak.authenticated) {
-      console.log('No autenticado, redirigiendo al login.');
       keycloak.login(); // Redirigir al login si no está autenticado
     } else if (!checkAdminRole()) {
-      console.log('No es admin, redirigiendo a la página de inicio.');
       next('/'); // Redirigir a la página de inicio si no es admin
     } else {
-      console.log('Usuario autenticado y es admin, permitiendo acceso.');
       next(); // Permitir acceso si el usuario es admin
     }
   } else {
-    console.log('Ruta no requiere autenticación, permitiendo acceso.');
     next(); // Permitir acceso si la ruta no requiere autenticación
   }
 });

@@ -63,8 +63,6 @@ export default {
       try {
         // Verificar si keycloak está autenticado
         if (keycloak.authenticated) {
-          console.log("ID de usuario Keycloak:", keycloak.tokenParsed.sub);
-
           // Realizar la solicitud al backend con el nombre del usuario
           const response = await axios.post('http://localhost:8000/create-checkout-session', {
             plan_name: this.plan.nombre,

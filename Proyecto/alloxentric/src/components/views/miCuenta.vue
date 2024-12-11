@@ -91,11 +91,6 @@ export default {
             if (keycloak.authenticated) {
                 const token = keycloak.tokenParsed;
 
-                console.log(token);
-                for (const [key, value] of Object.entries(token)) {
-                    console.log(`${key}: ${value}`);
-                }
-
                 this.fullName = token.given_name || '';  // Se asume que el nombre está en given_name
                 this.userName = token.preferred_username || '';
                 this.email = token.email || '';
@@ -104,12 +99,6 @@ export default {
                 const phonePrefix = token.prefijo || '';
                 const phoneNumber = token.telefono || '';
                 this.phoneNumber = `${phonePrefix} ${phoneNumber}`.trim();
-
-                // Mostrar en la consola para depurar
-                console.log('Full Name:', this.fullName);
-                console.log('Username:', this.userName);
-                console.log('Email:', this.email);
-                console.log('Phone Number:', this.phoneNumber);
 
                 // Ahora verificamos si los datos del usuario en Keycloak coinciden con los datos almacenados
                 const userData = {
@@ -127,7 +116,7 @@ export default {
 
                     if (response.status === 404) {
                         // Usuario no existe, lo guardamos
-                        const saveResponse = await fetch('http://localhost:8000/usuarios', {
+                        await fetch('http://localhost:8000/usuarios', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -135,34 +124,20 @@ export default {
                             body: JSON.stringify(userData),
                         });
 
-                        if (saveResponse.ok) {
-                            console.log('Usuario guardado correctamente');
-                        } else {
-                            throw new Error('Error al guardar los datos del usuario');
-                        }
                     } else if (response.ok) {
                         // Usuario existe, verificamos cambios
                         const userInDb = await response.json();
                         const hasChanges = this.checkForChanges(userInDb, userData);
 
                         if (hasChanges) {
-                            console.log('Se detectaron cambios, actualizando usuario...');
-                            const updateResponse = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`, {
+                            await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`, {
                                 method: 'PUT', 
                                 headers: {
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify(userData),
                             });
-
-                            if (updateResponse.ok) {
-                                console.log('Usuario actualizado correctamente');
-                            } else {
-                                throw new Error('Error al actualizar los datos del usuario');
-                            }
-                        } else {
-                            console.log('No se detectaron cambios, no se actualiza el usuario.');
-                        }
+                        } 
                     } else {
                         throw new Error('Error al verificar el usuario en la base de datos');
                     }
