@@ -111,6 +111,7 @@
 
 <script>
 import axios from "axios";
+import config from "@/config"; 
 
 export default {
   data() {
@@ -162,7 +163,7 @@ export default {
     },
     async fetchPlanes() {
       try {
-        const response = await axios.get("http://localhost:8000/plans");
+        const response = await axios.get(`${config.BASE_URL}:8000/plans`);
         this.planes = response.data;
       } catch (error) {
         console.error("Error fetching Planes:", error);
@@ -176,7 +177,7 @@ export default {
     async savePlan() {
       try {
         const planData = { ...this.newPlan, fecha_modificacion: new Date().toISOString() };
-        await axios.post("http://localhost:8000/plans", planData);
+        await axios.post(`${config.BASE_URL}:8000/plans`, planData);
         this.createDialog = false;
         this.fetchPlanes();
       } catch (error) {
@@ -191,7 +192,7 @@ export default {
     async updatePlan() {
       try {
         this.selectedPlan.fecha_modificacion = new Date().toISOString();
-        await axios.post(`http://localhost:8000/plans/${this.selectedPlan.id_plan}`, this.selectedPlan);
+        await axios.post(`${config.BASE_URL}:8000/plans/${this.selectedPlan.id_plan}`, this.selectedPlan);
         this.dialog = false;
         this.fetchPlanes();
       } catch (error) {
@@ -204,7 +205,7 @@ export default {
     },
     async confirmDeletePlan() {
       try {
-        await axios.delete(`http://localhost:8000/plans/${this.selectedPlan.id_plan}`);
+        await axios.delete(`${config.BASE_URL}:8000/plans/${this.selectedPlan.id_plan}`);
         this.dialog = false;
         this.deleteDialog = false;
         this.fetchPlanes();

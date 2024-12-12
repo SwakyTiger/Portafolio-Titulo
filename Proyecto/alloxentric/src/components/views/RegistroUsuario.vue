@@ -65,6 +65,7 @@
 
 <script>
 import axios from 'axios';
+import config from "@/config";
 
 export default {
   data() {
@@ -99,7 +100,7 @@ export default {
           pwd: this.user.pwd
         };
 
-        const response = await axios.post('http://localhost:8000/usuarios', payload);
+        const response = await axios.post(`${config.BASE_URL}:8000/usuarios`, payload);
 
         if (response.status === 201) {
           alert("Usuario registrado exitosamente");

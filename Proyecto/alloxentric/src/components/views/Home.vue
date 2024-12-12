@@ -43,6 +43,7 @@
 
 <script>
 import keycloak from '@/keycloak';
+import config from "@/config"; 
 
 export default {
     name: 'HomePage',
@@ -102,11 +103,11 @@ export default {
         };
 
         try {
-            const response = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`);
+            const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`);
 
             if (response.status === 404) {
                 // Usuario no existe, lo guardamos
-                await fetch('http://localhost:8000/usuarios', {
+                await fetch(`${config.BASE_URL}:8000/usuarios`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -119,7 +120,7 @@ export default {
                 const hasChanges = this.checkForChanges(userInDb, userData);
 
                 if (hasChanges) {
-                    await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`, {
+                    await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
                         method: 'PUT', 
                         headers: {
                             'Content-Type': 'application/json',

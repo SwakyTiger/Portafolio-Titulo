@@ -37,7 +37,7 @@ async def add_keycloak_to_request(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],  # Cambia según la URL de tu frontend
+    allow_origins=["http://34.176.251.141:8080"],  # Cambia según la URL de tu frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

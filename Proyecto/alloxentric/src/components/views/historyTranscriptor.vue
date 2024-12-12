@@ -121,6 +121,7 @@
 <script>
 import keycloak from "@/keycloak";
 import axios from "axios"; // Asegúrate de tener axios instalado
+import config from "@/config";
 
 export default {
   name: 'HistorialTranscriptor',
@@ -195,7 +196,7 @@ export default {
     async fetchHistoriales() {
       try {
         const username = this.userName;
-        const response = await axios.get(`http://localhost:8000/historial-transcrito?username=${username}`);
+        const response = await axios.get(`${config.BASE_URL}:8000/historial-transcrito?username=${username}`);
         this.desserts = response.data.historiales.map(historial => ({
           data_transcrito: historial.data_transcrito,
           fecha_transcrito: historial.fecha_transcrito,

@@ -49,6 +49,7 @@
 
 <script>
 import keycloak from '@/keycloak';
+import config from "@/config";
 
 
 export default {
@@ -77,7 +78,7 @@ export default {
         const fullName = `${firstName} ${lastName}`.trim();  // Formatear el nombre completo
         try {
           
-          const response = await fetch(`http://localhost:8000/payment-details?session_id=${sessionId}`);
+          const response = await fetch(`${config.BASE_URL}:8000/payment-details?session_id=${sessionId}`);
           
           // Verificar que la respuesta esté bien
           if (!response.ok) {
@@ -118,7 +119,7 @@ export default {
       const token = keycloak.token; // Obtén el token de Keycloak
       try {
         // Enviar `session_id` como parámetro de consulta en la URL
-        const response = await fetch(`http://localhost:8000/record-sale?session_id=${sessionId}`, {
+        const response = await fetch(`${config.BASE_URL}:8000/record-sale?session_id=${sessionId}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

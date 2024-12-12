@@ -102,6 +102,7 @@
 <script>
 import keycloak from '@/keycloak';
 import axios from 'axios';
+import config from "@/config";
 
 export default {
   data() {
@@ -138,7 +139,7 @@ export default {
     async obtenerInformacionUsuario() {
       try {
         const prefijo_and_telefono = this.prefijo + this.telefono;
-        const response = await axios.get(`http://localhost:8000/bot/${prefijo_and_telefono}`);
+        const response = await axios.get(`${config.BASE_URL}:8000/bot/${prefijo_and_telefono}`);
         const usuario = response.data.usuario;
         const suscripciones = response.data.suscripciones;
         
@@ -151,7 +152,7 @@ export default {
     },
     async restarCredito() {
       try {
-        await axios.put(`http://localhost:8000/restar-creditos/${this.username}`);
+        await axios.put(`${config.BASE_URL}:8000/restar-creditos/${this.username}`);
         this.creditos -= 1; // Actualizar los créditos en el frontend
       } catch (error) {
         console.error("Error al restar crédito:", error);
@@ -175,7 +176,7 @@ export default {
 
       this.isTranscribing = true;
     try {
-      const response = await axios.post("http://localhost:8000/transcribir-audio/", formData, {
+      const response = await axios.post(`${config.BASE_URL}:8000/transcribir-audio/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data"
         }
@@ -195,7 +196,7 @@ export default {
   },
   async guardarTranscripcion() {
       try {
-        await axios.post("http://localhost:8000/guardar-transcrito", null, {
+        await axios.post(`${config.BASE_URL}:8000/guardar-transcrito`, null, {
           params: {
             id_usuario: this.usuarioId,
             username: this.username,

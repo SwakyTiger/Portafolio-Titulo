@@ -96,6 +96,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import axios from 'axios';
+import config from "@/config";
 
 export default {
   name: 'VentasReport',
@@ -169,7 +170,7 @@ export default {
   methods: {
     async fetchVentas() {
       try {
-        const response = await axios.get('http://localhost:8000/ventas');
+        const response = await axios.get(`${config.BASE_URL}:8000/ventas`);
         this.ventas = response.data.ventas;
         this.calculateTotalVenta();
       } catch (error) {

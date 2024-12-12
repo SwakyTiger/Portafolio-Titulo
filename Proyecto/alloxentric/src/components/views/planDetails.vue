@@ -41,6 +41,8 @@
 <script>
 import axios from 'axios';
 import keycloak from '@/keycloak';
+import config from "@/config";
+
 
 // Asume que 'keycloak' es un objeto global configurado en tu aplicación
 // Asegúrate de que keycloak se haya autenticado antes de intentar obtener los datos
@@ -59,7 +61,7 @@ export default {
   // Método para obtener la lista de planes desde el backend
   async fetchPlans() {
     try {
-      const response = await axios.get('http://localhost:8000/plans');
+      const response = await axios.get(`${config.BASE_URL}:8000/plans`);
       this.plans = response.data;
     } catch (error) {
       console.error("Error fetching plans:", error);

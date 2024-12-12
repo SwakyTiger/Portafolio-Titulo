@@ -50,9 +50,9 @@
                                 <v-list-item-subtitle>{{ phoneNumber }}</v-list-item-subtitle>
                             </v-list-item>
                         </v-list>
-
+                        <!-- URL  -->
                         <v-btn x-large color="#42b983" dark class="mt-8"
-                            :href="`http://localhost:8081/realms/Transcriptor/account/`" target="_blank">
+                            :href="`http://34.176.251.141:8081/realms/Transcriptor/account/`" target="_blank">
                             Editar
                         </v-btn>
 
@@ -65,6 +65,7 @@
 
 <script>
 import keycloak from '@/keycloak';
+import config from "@/config";
 
 export default {
     name: 'MiCuenta',
@@ -112,11 +113,11 @@ export default {
                 };
 
                 try {
-                    const response = await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`);
+                    const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`);
 
                     if (response.status === 404) {
                         // Usuario no existe, lo guardamos
-                        await fetch('http://localhost:8000/usuarios', {
+                        await fetch(`${config.BASE_URL}:8000/usuarios`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -130,7 +131,7 @@ export default {
                         const hasChanges = this.checkForChanges(userInDb, userData);
 
                         if (hasChanges) {
-                            await fetch(`http://localhost:8000/usuarios/${userData.id_usuario}`, {
+                            await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
                                 method: 'PUT', 
                                 headers: {
                                     'Content-Type': 'application/json',

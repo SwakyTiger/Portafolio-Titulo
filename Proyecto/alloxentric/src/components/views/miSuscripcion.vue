@@ -131,6 +131,7 @@
 <script>
 import axios from "axios";
 import keycloak from "@/keycloak";
+import config from "@/config";
 
 export default {
 data() {
@@ -175,7 +176,7 @@ methods: {
   },
   async fetchAvailablePlans() {
     // Llama al backend para obtener los planes disponibles
-    const response = await axios.get("http://localhost:8000/plans", {
+    const response = await axios.get(`${config.BASE_URL}:8000/plans`, {
       headers: {
         Authorization: `Bearer ${keycloak.token}`,
       },
@@ -198,7 +199,7 @@ methods: {
   // Obtener la suscripción del usuario desde el backend
   async getUserSubscription(userId) {
     try {
-      const response = await axios.get(`http://localhost:8000/suscripciones/${userId}`, {
+      const response = await axios.get(`${config.BASE_URL}:8000/suscripciones/${userId}`, {
         headers: {
           Authorization: `Bearer ${keycloak.token}`,
         },
@@ -210,7 +211,7 @@ methods: {
   },
   async performCancelSubscription() {
     try {
-      const response = await axios.post(`http://localhost:8000/cancelar_suscripcion/${this.subscription.id_suscripcion}`);
+      const response = await axios.post(`${config.BASE_URL}:8000/cancelar_suscripcion/${this.subscription.id_suscripcion}`);
       
       if (response.data.message) {
         await this.fetchSubscriptionData();
@@ -225,7 +226,7 @@ methods: {
   },
 async updateSubscription() {
   try {
-    const response = await axios.post(`http://localhost:8000/actualizar_suscripcion/${this.subscription.id_suscripcion}/${this.selectedPlan}`, {
+    const response = await axios.post(`${config.BASE_URL}:8000/actualizar_suscripcion/${this.subscription.id_suscripcion}/${this.selectedPlan}`, {
     headers: {
       Authorization: `Bearer ${keycloak.token}`,
     }

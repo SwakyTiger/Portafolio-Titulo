@@ -32,6 +32,7 @@
 <script>
 import axios from 'axios';
 import keycloak from '@/keycloak';
+import config from "@/config";
 
 export default {
   data() {
@@ -64,7 +65,7 @@ export default {
         // Verificar si keycloak está autenticado
         if (keycloak.authenticated) {
           // Realizar la solicitud al backend con el nombre del usuario
-          const response = await axios.post('http://localhost:8000/create-checkout-session', {
+          const response = await axios.post(`${config.BASE_URL}:8000/create-checkout-session`, {
             plan_name: this.plan.nombre,
             price: this.plan.precio,
             user_email: this.usuario.email,  // Obtener el email desde el token

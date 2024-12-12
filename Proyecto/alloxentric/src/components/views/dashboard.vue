@@ -78,6 +78,7 @@
 <script>
 import { Chart, registerables } from 'chart.js';
 import axios from 'axios';
+import config from "@/config";
 
 Chart.register(...registerables);
 
@@ -126,7 +127,7 @@ export default {
       this.loading = true;
       this.buttonDisabled = true; // Deshabilitar el botón
       try {
-        const responseVentas = await axios.get('http://localhost:8000/ventas');
+        const responseVentas = await axios.get(`${config.BASE_URL}:8000/ventas`);
         this.ventas = responseVentas.data.ventas;
 
         // **Filtrar por Año**
@@ -152,7 +153,7 @@ export default {
     async fetchSuscriptores() {
       this.loading = true;
       try {
-        const responseSuscriptores = await axios.get('http://localhost:8000/suscripciones');
+        const responseSuscriptores = await axios.get(`${config.BASE_URL}:8000/suscripciones`);
         this.suscriptores = responseSuscriptores.data.ventas;
 
         this.totalSuscritos();
