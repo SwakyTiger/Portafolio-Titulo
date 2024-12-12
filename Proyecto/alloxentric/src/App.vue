@@ -67,7 +67,7 @@
           <v-list-item-title><v-icon>mdi-text-to-speech</v-icon>Transcriptor Web</v-list-item-title>
         </v-list-item>
         <v-list-item v-if="!isAuthenticated"
-          href="http://localhost:8081/realms/Transcriptor/protocol/openid-connect/registrations?client_id=transcriptor_alloxentric&response_type=code&scope=openid&redirect_uri=http://localhost:8080/">
+          href="http://34.176.251.141:8081/realms/Transcriptor/protocol/openid-connect/registrations?client_id=transcriptor_alloxentric&response_type=code&scope=openid&redirect_uri=http://34.176.251.141:8080/">
           <v-list-item-title>Registrarse</v-list-item-title>
         </v-list-item>
         <v-list-item v-if="isAdmin" to="/CuadraturaMensual" link>
