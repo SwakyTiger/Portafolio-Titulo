@@ -44,8 +44,8 @@ def create_checkout_session(session_data: CreateCheckoutSession):
                 'quantity': 1,
             }],
             mode='subscription',
-            success_url="http://34.176.251.141:8080/pagoRealizado?session_id={CHECKOUT_SESSION_ID}", #URL ACA
-            cancel_url="http://34.176.251.141:8080/cancel", #URL ACA
+            success_url="http://34.176.135.227:8080/pagoRealizado?session_id={CHECKOUT_SESSION_ID}", #URL ACA
+            cancel_url="http://34.176.135.227:8080/cancel", #URL ACA
             customer=customer.id
         )
         
