@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException, status, Response
+from fastapi import APIRouter, HTTPException, status, Response, Depends
 from src.config.db import conn
 from ..schemas.schemas import planEntity, plansEntity
 from ..models.models import Plan
 from starlette.status import HTTP_204_NO_CONTENT
 from datetime import datetime
 import stripe
-
+from .auth import require_common_user, require_admin_role
 
 plans = APIRouter()
 
@@ -16,7 +16,7 @@ def find_all_plans():
 
 #CREAR UN NUEVO PLAN
 @plans.post('/plans', tags=["plans"])
-async def create_plan(plan: Plan):
+async def create_plan(plan: Plan, current_user: dict = Depends(require_admin_role)):
     # Valida que no exista un plan con el mismo código
     existing_plan = conn.alloxentric_db.planes.find_one({"id_plan": plan.id_plan})
     if existing_plan:
@@ -64,7 +64,7 @@ def find_plan(id_plan: str ):
 
 #ACTUALIZAR PLANES
 @plans.post('/plans/{id_plan}', tags=["plans"])
-def update_plan(id_plan: str, plan: Plan):
+def update_plan(id_plan: str, plan: Plan,  current_user: dict = Depends(require_admin_role)):
     try:
         # Actualiza el producto en Stripe (nombre y descripción)
         stripe.Product.modify(
@@ -108,7 +108,7 @@ def update_plan(id_plan: str, plan: Plan):
 
 #ELIMINAR UN PLAN POR SU ID
 @plans.delete('/plans/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=["plans"])
-def delete_plan(id: str):
+def delete_plan(id: str, current_user: dict = Depends(require_admin_role)):
     result = conn.alloxentric_db.planes.find_one_and_delete({"id_plan": id})
     if not result:
         raise HTTPException(

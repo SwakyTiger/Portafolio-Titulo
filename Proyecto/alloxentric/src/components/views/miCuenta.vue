@@ -50,7 +50,6 @@
                                 <v-list-item-subtitle>{{ phoneNumber }}</v-list-item-subtitle>
                             </v-list-item>
                         </v-list>
-                        <!-- URL  -->
                         <v-btn x-large color="#42b983" dark class="mt-8"
                             :href="`http://34.176.135.227:8081/realms/Transcriptor/account/`" target="_blank">
                             Editar
@@ -76,6 +75,7 @@ export default {
             email: '',
             phoneNumber: '',
             isAuthenticated: false,
+            errorMessage: '', // Variable para manejar mensajes de error
         };
     },
     methods: {
@@ -84,6 +84,7 @@ export default {
                 keycloak.logout({
                     redirectUri: window.location.origin
                 });
+                localStorage.removeItem('token');
             } else {
                 keycloak.login();
             }
@@ -92,16 +93,14 @@ export default {
             if (keycloak.authenticated) {
                 const token = keycloak.tokenParsed;
 
-                this.fullName = token.given_name || '';  // Se asume que el nombre está en given_name
+                this.fullName = token.given_name || '';
                 this.userName = token.preferred_username || '';
                 this.email = token.email || '';
 
-                // Propiedades personalizadas
                 const phonePrefix = token.prefijo || '';
                 const phoneNumber = token.telefono || '';
                 this.phoneNumber = `${phonePrefix} ${phoneNumber}`.trim();
 
-                // Ahora verificamos si los datos del usuario en Keycloak coinciden con los datos almacenados
                 const userData = {
                     id_usuario: token.sub,
                     nombre: token.given_name || '',
@@ -113,42 +112,53 @@ export default {
                 };
 
                 try {
-                    const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`);
+                    const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+
+                    if (!token) {
+                        this.errorMessage = "Token no disponible. Por favor, inicia sesión.";
+                        return;
+                    }
+
+                    const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
 
                     if (response.status === 404) {
-                        // Usuario no existe, lo guardamos
                         await fetch(`${config.BASE_URL}:8000/usuarios`, {
                             method: 'POST',
                             headers: {
+                                'Authorization': `Bearer ${token}`,
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify(userData),
                         });
-
                     } else if (response.ok) {
-                        // Usuario existe, verificamos cambios
                         const userInDb = await response.json();
                         const hasChanges = this.checkForChanges(userInDb, userData);
 
                         if (hasChanges) {
                             await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
-                                method: 'PUT', 
+                                method: 'PUT',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`,
                                 },
                                 body: JSON.stringify(userData),
                             });
-                        } 
+                        }
                     } else {
-                        throw new Error('Error al verificar el usuario en la base de datos');
+                        this.errorMessage = 'Error al verificar el usuario en la base de datos';
                     }
                 } catch (error) {
+                    this.errorMessage = 'Error al obtener los datos del usuario';
                     console.error('Error:', error);
                 }
             }
         },
         checkForChanges(userInDb, userData) {
-            // Compara cada campo relevante
             return (
                 userInDb.nombre !== userData.nombre ||
                 userInDb.apellido !== userData.apellido ||
@@ -160,7 +170,6 @@ export default {
         },
     },
     mounted() {
-        // Verificar el estado de autenticación al montar el componente
         this.isAuthenticated = keycloak.authenticated;
         keycloak.onAuthLogout = () => {
             this.isAuthenticated = false;

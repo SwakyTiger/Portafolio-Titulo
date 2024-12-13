@@ -37,7 +37,7 @@
                   </v-list-item-icon>
                   <v-list-item-content>
                     <v-list-item-title class="white--text totales ">Total Vendido</v-list-item-title>
-                    <v-list-item-subtitle class="white--text font-weight-medium">{{ formatCurrency(totalVenta)
+                    <v-list-item-subtitle class="white--text font-weight-medium">{{ formatCurrency(totalVenta / 100)
                       }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
@@ -174,7 +174,20 @@ export default {
   methods: {
     async fetchVentas() {
       try {
-        const response = await axios.get(`${config.BASE_URL}:8000/suscripciones`);
+        const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+
+        if (!token) {
+          this.errorMessage = "Token no disponible. Por favor, inicia sesión.";
+          this.showAlert = true;
+          return;
+        }
+
+        const response = await axios.get(`${config.BASE_URL}:8000/suscripciones`, {
+          headers: {
+            'Authorization': `Bearer ${token}`, // Incluye el token en el encabezado
+            'Content-Type': 'application/json',
+          },
+        });
         this.ventas = response.data.ventas; 
         this.totalClientes = response.data.total_clientes;
         this.calculateTotalVenta();

@@ -1,34 +1,31 @@
 <template>
   <v-app id="app" class="d-flex flex-column min-vh-100">
     <v-app-bar app color="#ffffff">
-      <router-link  to="/" class="d-flex align-center" >
-          <img :src="require('@/assets/alloxentric_logo_only.png')" alt="Alloxentric Logo" class="custom-logo" />
+      <router-link to="/" class="d-flex align-center">
+        <img :src="require('@/assets/alloxentric_logo_only.png')" alt="Alloxentric Logo" class="custom-logo" />
       </router-link>
       <v-container class="d-flex align-center" style="margin-right: 0px;">
-        
+
 
         <nav class="d-none d-md-flex align-center">
           <v-btn text to="/" color="#42b983"><v-icon>mdi-home</v-icon>Inicio</v-btn>
-          
+
           <v-btn text to="/planDetails" color="#42b983"><v-icon>mdi-cash</v-icon>Planes</v-btn>
           <!-- URI KEYCLOAK -->
           <v-btn v-if="!isAuthenticated" text
             href="http://34.176.135.227:8081/realms/Transcriptor/protocol/openid-connect/registrations?client_id=transcriptor_alloxentric&response_type=code&scope=openid&redirect_uri=http://34.176.135.227:8080/"
             color="#42b983">Registrarse</v-btn>
-          <v-btn v-if="isAuthenticated" text to="/transcriptorWeb" color="#42b983"><v-icon>mdi-text-to-speech</v-icon>Transcriptor Web</v-btn>
-          
+          <v-btn v-if="isAuthenticated" text to="/transcriptorWeb"
+            color="#42b983"><v-icon>mdi-text-to-speech</v-icon>Transcriptor Web</v-btn>
+
           <v-menu v-if="isAdmin" transition="slide-y-transition">
             <template v-slot:activator="{ props }">
-              <v-btn color="#42b983" v-bind="props" >
+              <v-btn color="#42b983" v-bind="props">
                 Administrador <v-icon class="mdi mdi-menu-down"></v-icon>
               </v-btn>
             </template>
             <v-list>
-              <v-list-item
-                v-for="(item, i) in menuItems"
-                :key="i"
-                @click="navigate(item.to)"
-              >
+              <v-list-item v-for="(item, i) in menuItems" :key="i" @click="navigate(item.to)">
                 <v-list-item-title>{{ item.title }}</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -91,7 +88,8 @@
         <template v-if="isAuthenticated">
           <v-spacer></v-spacer>
           <v-list-item @click="handleAuthAction" link>
-            <v-list-item-title class="error--text"><v-icon color="error">mdi-logout</v-icon>Cerrar Sesión</v-list-item-title>
+            <v-list-item-title class="error--text"><v-icon color="error">mdi-logout</v-icon>Cerrar
+              Sesión</v-list-item-title>
           </v-list-item>
         </template>
       </v-list>
@@ -101,7 +99,9 @@
     <v-main class="flex-grow-1">
       <router-view />
     </v-main>
-
+    <a href="https://wa.me/56965947172">
+      <div class="link-wsp"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" style="fill: white;transform: ;msFilter:;"><path fill-rule="evenodd" clip-rule="evenodd" d="M18.403 5.633A8.919 8.919 0 0 0 12.053 3c-4.948 0-8.976 4.027-8.978 8.977 0 1.582.413 3.126 1.198 4.488L3 21.116l4.759-1.249a8.981 8.981 0 0 0 4.29 1.093h.004c4.947 0 8.975-4.027 8.977-8.977a8.926 8.926 0 0 0-2.627-6.35m-6.35 13.812h-.003a7.446 7.446 0 0 1-3.798-1.041l-.272-.162-2.824.741.753-2.753-.177-.282a7.448 7.448 0 0 1-1.141-3.971c.002-4.114 3.349-7.461 7.465-7.461a7.413 7.413 0 0 1 5.275 2.188 7.42 7.42 0 0 1 2.183 5.279c-.002 4.114-3.349 7.462-7.461 7.462m4.093-5.589c-.225-.113-1.327-.655-1.533-.73-.205-.075-.354-.112-.504.112s-.58.729-.711.879-.262.168-.486.056-.947-.349-1.804-1.113c-.667-.595-1.117-1.329-1.248-1.554s-.014-.346.099-.458c.101-.1.224-.262.336-.393.112-.131.149-.224.224-.374s.038-.281-.019-.393c-.056-.113-.505-1.217-.692-1.666-.181-.435-.366-.377-.504-.383a9.65 9.65 0 0 0-.429-.008.826.826 0 0 0-.599.28c-.206.225-.785.767-.785 1.871s.804 2.171.916 2.321c.112.15 1.582 2.415 3.832 3.387.536.231.954.369 1.279.473.537.171 1.026.146 1.413.089.431-.064 1.327-.542 1.514-1.066.187-.524.187-.973.131-1.067-.056-.094-.207-.151-.43-.263"></path></svg></div>
+    </a>
     <!-- Footer -->
     <MainFooter />
   </v-app>
@@ -192,7 +192,7 @@ export default {
 </script>
 
 <style>
-.d-flex{
+.d-flex {
   display: flex !important;
   justify-content: end !important;
 }
@@ -205,7 +205,7 @@ export default {
 }
 
 @media (max-width: 1280px) {
-  .custom-logo{
+  .custom-logo {
     display: none !important;
   }
 }
@@ -236,11 +236,26 @@ nav v-btn {
   margin-right: 16px;
 }
 
-.v-list-item-title{
+.v-list-item-title {
   color: #42b983 !important;
 }
 
 .error--text {
   color: #ff5252 !important;
+}
+
+.link-wsp {
+  z-index: 999;
+  width: 60px;
+  height: 60px !important;
+  background-color: #25d366;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  border-radius: 100px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  box-shadow: 3px 3px 3px #00000093;
 }
 </style>

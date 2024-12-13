@@ -9,39 +9,19 @@
         <v-col cols="12" md="3">
           <v-card flat class="h-100">
             <v-list>
-              <v-list-item
-                :prepend-avatar="require('@/assets/icon-account.png')"
-                :title="fullName"
-                :subtitle="email"
-              ></v-list-item>
+              <v-list-item :prepend-avatar="require('@/assets/icon-account.png')" :title="fullName"
+                :subtitle="email"></v-list-item>
             </v-list>
             <v-divider></v-divider>
             <v-list nav density="compact">
-              <v-list-item
-                prepend-icon="mdi-view-dashboard"
-                title="Mi Cuenta"
-                value="home"
-                to="/miCuenta"
-              ></v-list-item>
-              <v-list-item
-                prepend-icon="mdi-forum"
-                title="Historial"
-                value="about"
-                to="/historyTranscriptor"
-              ></v-list-item>
-              <v-list-item 
-                prepend-icon="mdi mdi-credit-card" 
-                title="Mis Suscripciones" 
-                value="about"
-                to="/miSuscripcion"
-              ></v-list-item>
-              <v-list-item
-                prepend-icon="mdi-logout"
-                :title="isAuthenticated ? 'Cerrar Sesión' : ''"
-                @click="handleAuthAction"
-                id="authButton"
-                class="error--text"
-              ></v-list-item>
+              <v-list-item prepend-icon="mdi-view-dashboard" title="Mi Cuenta" value="home"
+                to="/miCuenta"></v-list-item>
+              <v-list-item prepend-icon="mdi-forum" title="Historial" value="about"
+                to="/historyTranscriptor"></v-list-item>
+              <v-list-item prepend-icon="mdi mdi-credit-card" title="Mis Suscripciones" value="about"
+                to="/miSuscripcion"></v-list-item>
+              <v-list-item prepend-icon="mdi-logout" :title="isAuthenticated ? 'Cerrar Sesión' : ''"
+                @click="handleAuthAction" id="authButton" class="error--text"></v-list-item>
             </v-list>
           </v-card>
         </v-col>
@@ -52,7 +32,7 @@
               <v-card-title class="text-h3 text-center">
                 Nombre Plan: {{ subscription.nombre_plan }}
               </v-card-title>
-              
+
               <v-card-text class="text-h5 text-center pt-2">
                 Total Pagado: ${{ subscription.total_pagado / 100 }} USD
               </v-card-text>
@@ -76,7 +56,8 @@
             </v-card-text>
 
             <v-card-actions v-if="subscription" class="justify-center pb-4">
-              <v-btn variant="elevated" color="error" @click="confirmCancelSubscription" :disabled="subscription.estado === 'cancel_at_period_end'">Cancelar Suscripción</v-btn>
+              <v-btn variant="elevated" color="error" @click="confirmCancelSubscription"
+                :disabled="subscription.estado === 'cancel_at_period_end'">Cancelar Suscripción</v-btn>
               <v-btn variant="elevated" color="primary" @click="openPlanDialog">
                 Actualizar Plan
               </v-btn>
@@ -98,27 +79,24 @@
               </v-card>
             </v-dialog>
             <v-dialog v-model="isPlanDialogOpen" max-width="500px">
-            <v-card>
-              <v-alert v-if="showAlert" type="error" dismissible>
-                No hay planes disponibles para actualizar.
-              </v-alert>
-              <v-card-title class="text-h5">Selecciona un nuevo plan</v-card-title>
-              <v-card-text>
-                <v-radio-group v-model="selectedPlan">
-                  <v-radio
-                    v-for="plan in availablePlans"
-                    :key="plan.id"
-                    :label="`${plan.nombre} - $${plan.precio/100} USD`"
-                    :value="plan.stripe_price_id"
-                    :color="primary"
-                  ></v-radio>
-                </v-radio-group>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="isPlanDialogOpen = false">Cancelar</v-btn>
-                <v-btn color="green darken-1" text @click="updateSubscription" :disabled="availablePlans.length === 0">Actualizar</v-btn>
-              </v-card-actions>
+              <v-card>
+                <v-alert v-if="showAlert" type="error" dismissible>
+                  No hay planes disponibles para actualizar.
+                </v-alert>
+                <v-card-title class="text-h5">Selecciona un nuevo plan</v-card-title>
+                <v-card-text>
+                  <v-radio-group v-model="selectedPlan">
+                    <v-radio v-for="plan in availablePlans" :key="plan.id"
+                      :label="`${plan.nombre} - $${plan.precio / 100} USD`" :value="plan.stripe_price_id"
+                      :color="primary"></v-radio>
+                  </v-radio-group>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="isPlanDialogOpen = false">Cancelar</v-btn>
+                  <v-btn color="green darken-1" text @click="updateSubscription"
+                    :disabled="availablePlans.length === 0">Actualizar</v-btn>
+                </v-card-actions>
               </v-card>
             </v-dialog>
           </v-card>
@@ -131,7 +109,6 @@
 <script>
 import axios from "axios";
 import keycloak from "@/keycloak";
-import config from "@/config";
 
 export default {
 data() {
@@ -176,7 +153,7 @@ methods: {
   },
   async fetchAvailablePlans() {
     // Llama al backend para obtener los planes disponibles
-    const response = await axios.get(`${config.BASE_URL}:8000/plans`, {
+    const response = await axios.get("http://localhost:8000/plans", {
       headers: {
         Authorization: `Bearer ${keycloak.token}`,
       },
@@ -199,7 +176,7 @@ methods: {
   // Obtener la suscripción del usuario desde el backend
   async getUserSubscription(userId) {
     try {
-      const response = await axios.get(`${config.BASE_URL}:8000/suscripciones/${userId}`, {
+      const response = await axios.get(`http://localhost:8000/suscripciones/${userId}`, {
         headers: {
           Authorization: `Bearer ${keycloak.token}`,
         },
@@ -211,7 +188,7 @@ methods: {
   },
   async performCancelSubscription() {
     try {
-      const response = await axios.post(`${config.BASE_URL}:8000/cancelar_suscripcion/${this.subscription.id_suscripcion}`);
+      const response = await axios.post(`http://localhost:8000/cancelar_suscripcion/${this.subscription.id_suscripcion}`);
       
       if (response.data.message) {
         await this.fetchSubscriptionData();
@@ -226,7 +203,7 @@ methods: {
   },
 async updateSubscription() {
   try {
-    const response = await axios.post(`${config.BASE_URL}:8000/actualizar_suscripcion/${this.subscription.id_suscripcion}/${this.selectedPlan}`, {
+    const response = await axios.post(`http://localhost:8000/actualizar_suscripcion/${this.subscription.id_suscripcion}/${this.selectedPlan}`, {
     headers: {
       Authorization: `Bearer ${keycloak.token}`,
     }
@@ -272,13 +249,16 @@ mounted() {
 .v-card {
   border-radius: 8px;
 }
+
 .v-list-item--active {
   background-color: #e6f7f0;
 }
+
 #authButton {
   font-size: 14px;
   color: #ff5252;
 }
+
 .v-data-table {
   background-color: white;
 }
@@ -293,10 +273,12 @@ mounted() {
   justify-content: center;
   color: white;
 }
-.tarjeta{
+
+.tarjeta {
   padding: 50px;
 }
-.cancelar{
+
+.cancelar {
   width: 150%;
 }
 </style>

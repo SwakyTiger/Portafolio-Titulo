@@ -195,8 +195,15 @@ export default {
     },
     async fetchHistoriales() {
       try {
+        const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+
         const username = this.userName;
-        const response = await axios.get(`${config.BASE_URL}:8000/historial-transcrito?username=${username}`);
+        const response = await axios.get(`${config.BASE_URL}:8000/historial-transcrito?username=${username}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`, // Incluye el token en el encabezado
+            'Content-Type': 'application/json',
+          },
+        });
         this.desserts = response.data.historiales.map(historial => ({
           data_transcrito: historial.data_transcrito,
           fecha_transcrito: historial.fecha_transcrito,

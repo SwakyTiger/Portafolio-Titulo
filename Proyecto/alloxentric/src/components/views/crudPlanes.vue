@@ -4,13 +4,7 @@
       <v-card-title class="custom-title">
         Administrador de Planes
       </v-card-title>
-      <v-data-table
-        :headers="headers"
-        :items="planes"
-        :items-per-page="10"
-        v-model:page="page"
-        class="custom-table"
-      >
+      <v-data-table :headers="headers" :items="planes" :items-per-page="10" v-model:page="page" class="custom-table">
         <template v-slot:[`item.precio`]="{ item }">
           <span>{{ formatCurrency(item.precio / 100) }}</span>
         </template>
@@ -20,11 +14,7 @@
         <template v-slot:[`item.edit`]="{ item }">
           <v-btn @click="showEdit(item)" outlined color="red">
             <template v-slot:prepend>
-              <img
-                :src="require('@/assets/icon-editar.png')"
-                alt="Editar"
-                class="custom-icon"
-              />
+              <img :src="require('@/assets/icon-editar.png')" alt="Editar" class="custom-icon" />
               Editar
             </template>
           </v-btn>
@@ -76,7 +66,8 @@
             <v-text-field v-model="selectedPlan.id_plan" label="Código" required disabled></v-text-field>
             <v-text-field v-model="selectedPlan.nombre" label="Nombre del Plan" required></v-text-field>
             <span>Precio ingresado: {{ formatCurrency(selectedPlan.precio / 100) }}</span>
-            <v-text-field v-model="selectedPlan.precio" label="Precio" type="number" step="0.01" required></v-text-field>
+            <v-text-field v-model="selectedPlan.precio" label="Precio" type="number" step="0.01"
+              required></v-text-field>
             <v-text-field v-model="selectedPlan.creditos" label="Creditos" type="number" step="0.01"></v-text-field>
             <v-textarea v-model="selectedPlan.descripcion" label="Descripción"></v-textarea>
           </v-form>
@@ -95,7 +86,7 @@
       <v-card>
         <v-card-title class="headline">Confirmación</v-card-title>
         <v-card-text>
-          ¿Estás seguro de que deseas eliminar el "<strong>{{ selectedPlan?.nombre }}</strong>"? 
+          ¿Estás seguro de que deseas eliminar el "<strong>{{ selectedPlan?.nombre }}</strong>"?
           Esta acción no se puede deshacer.
         </v-card-text>
         <v-card-actions>
@@ -111,7 +102,7 @@
 
 <script>
 import axios from "axios";
-import config from "@/config"; 
+import config from "@/config";
 
 export default {
   data() {
@@ -175,14 +166,27 @@ export default {
       this.showAlert = false;
     },
     async savePlan() {
+      const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+
+      if (!token) {
+        this.errorMessage = "Token no disponible. Por favor, inicia sesión.";
+        this.showAlert = true;
+        return;
+      }
+
       try {
         const planData = { ...this.newPlan, fecha_modificacion: new Date().toISOString() };
-        await axios.post(`${config.BASE_URL}:8000/plans`, planData);
+        await axios.post(`${config.BASE_URL}:8000/plans`, planData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
         this.createDialog = false;
         this.fetchPlanes();
       } catch (error) {
-        this.errorMessage = error.response?.data?.detail || "Error al guardar el plan.";
-        this.showAlert = true;
+        console.error("Error:", error); // Imprime el error para depuración
+
       }
     },
     showEdit(plan) {
@@ -191,12 +195,26 @@ export default {
     },
     async updatePlan() {
       try {
+        const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+
+        if (!token) {
+          this.errorMessage = "Token no disponible. Por favor, inicia sesión.";
+          this.showAlert = true;
+          return;
+        }
+
         this.selectedPlan.fecha_modificacion = new Date().toISOString();
-        await axios.post(`${config.BASE_URL}:8000/plans/${this.selectedPlan.id_plan}`, this.selectedPlan);
+        await axios.post(`${config.BASE_URL}:8000/plans/${this.selectedPlan.id_plan}`, this.selectedPlan, {
+          headers: {
+            'Authorization': `Bearer ${token}`, // Incluye el token en el encabezado
+            'Content-Type': 'application/json',
+          },
+        });
         this.dialog = false;
         this.fetchPlanes();
       } catch (error) {
         console.error("Error updating Plan:", error);
+
       }
     },
     openDeleteDialog(plan) {
@@ -205,12 +223,26 @@ export default {
     },
     async confirmDeletePlan() {
       try {
-        await axios.delete(`${config.BASE_URL}:8000/plans/${this.selectedPlan.id_plan}`);
+        const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
+
+        if (!token) {
+          this.errorMessage = "Token no disponible. Por favor, inicia sesión.";
+          this.showAlert = true;
+          return;
+        }
+
+        await axios.delete(`${config.BASE_URL}:8000/plans/${this.selectedPlan.id_plan}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`, // Incluye el token en el encabezado
+            'Content-Type': 'application/json',
+          },
+        });
         this.dialog = false;
         this.deleteDialog = false;
         this.fetchPlanes();
       } catch (error) {
         console.error("Error deleting Plan:", error.response?.data || error);
+
       }
     },
   },
@@ -224,7 +256,8 @@ html,
 body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* Oculta el desbordamiento horizontal en toda la página */
+  overflow-x: hidden;
+  /* Oculta el desbordamiento horizontal en toda la página */
 }
 
 .centered-container {
@@ -239,7 +272,8 @@ body {
 .custom-card {
   max-width: 80%;
   width: 100%;
-  box-sizing: border-box; /* Asegura que el padding y el borde estén incluidos en el ancho total */
+  box-sizing: border-box;
+  /* Asegura que el padding y el borde estén incluidos en el ancho total */
 }
 
 .custom-title {
@@ -252,11 +286,13 @@ body {
   width: 100%;
   border-radius: 5px;
   border: 1px solid #ddd;
-  box-sizing: border-box; /* Asegura que el padding y el borde estén incluidos en el ancho total */
+  box-sizing: border-box;
+  /* Asegura que el padding y el borde estén incluidos en el ancho total */
 }
 
-.v-data-table > .v-data-table__tr:nth-child(even) {
-  background-color: #f5f5f5; /* Fondo gris claro para filas pares */
+.v-data-table>.v-data-table__tr:nth-child(even) {
+  background-color: #f5f5f5;
+  /* Fondo gris claro para filas pares */
 }
 
 /* Estilo para el botón */
@@ -264,13 +300,16 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 8px 16px; /* Ajusta el padding según sea necesario */
+  padding: 8px 16px;
+  /* Ajusta el padding según sea necesario */
 }
 
 /* Estilo para el logo dentro del botón */
 .custom-icon {
-  width: 24px; /* Ajusta el tamaño del logo según tus preferencias */
-  height: 24px; /* Ajusta el tamaño del logo según tus preferencias */
+  width: 24px;
+  /* Ajusta el tamaño del logo según tus preferencias */
+  height: 24px;
+  /* Ajusta el tamaño del logo según tus preferencias */
 }
 
 .titulo-total-container {
@@ -283,21 +322,26 @@ body {
 }
 
 .botones-reportes {
-  margin-right: 20px; /* Alinea los botones en una columna */
+  margin-right: 20px;
+  /* Alinea los botones en una columna */
   display: flex;
   flex-direction: column;
   justify-content: stretch;
 }
 
 .reporte-btn {
-  background-color: #1dbea8; /* Cambia el color de fondo del botón */
-  color: #ffffff; /* Cambia el color del texto del botón */
-  margin: 5px; /* Espacio entre los botones */
+  background-color: #1dbea8;
+  /* Cambia el color de fondo del botón */
+  color: #ffffff;
+  /* Cambia el color del texto del botón */
+  margin: 5px;
+  /* Espacio entre los botones */
 }
 
 /* Estilo para el título */
 .titulo-total {
-  flex-grow: 1; /* Asegura que el título ocupe el espacio restante */
+  flex-grow: 1;
+  /* Asegura que el título ocupe el espacio restante */
 }
 
 .titulo-total h1 {

@@ -43,7 +43,7 @@
 
 <script>
 import keycloak from '@/keycloak';
-import config from "@/config"; 
+import config from "@/config";
 
 export default {
     name: 'HomePage',
@@ -89,64 +89,76 @@ export default {
     },
     methods: {
         async get_user_data() {
-    if (keycloak.authenticated) {
-        const token = keycloak.tokenParsed;
+            if (keycloak.authenticated) {
+                const token = keycloak.token; // Obtén el token JWT
+                // Almacena el token en una cookie
+                document.cookie = `token=${token}; path=/; secure; SameSite=Strict`;
 
-        const userData = {
-            id_usuario: token.sub,
-            nombre: token.given_name || '', // Keycloak suele usar given_name para el nombre
-            apellido: token.family_name || '', // family_name para el apellido
-            prefijo: token.prefijo || '',
-            numero_telefono: token.telefono ? parseInt(token.telefono) : null, // Asegúrate de que sea un número
-            email: token.email || '',
-            username: token.preferred_username || '',
-        };
+                // Realiza la llamada a tu API
+                const userData = {
+                    id_usuario: token.sub,
+                    nombre: token.given_name || '',
+                    apellido: token.family_name || '',
+                    prefijo: token.prefijo || '',
+                    numero_telefono: token.telefono ? parseInt(token.telefono) : null,
+                    email: token.email || '',
+                    username: token.preferred_username || '',
+                };
 
-        try {
-            const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`);
+                // Llama a tu API para guardar o actualizar el usuario
+                await this.get_user_data(userData);
 
-            if (response.status === 404) {
-                // Usuario no existe, lo guardamos
-                await fetch(`${config.BASE_URL}:8000/usuarios`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(userData),
-                });
-            } else if (response.ok) {
-                // Usuario existe, verificamos cambios
-                const userInDb = await response.json();
-                const hasChanges = this.checkForChanges(userInDb, userData);
-
-                if (hasChanges) {
-                    await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
-                        method: 'PUT', 
+                try {
+                    const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
                         headers: {
+                            'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify(userData),
                     });
+                    if (response.status === 404) {
+                        // Usuario no existe, lo guardamos
+                        await fetch(`${config.BASE_URL}:8000/usuarios`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(userData),
+                        });
+                    } else if (response.ok) {
+                        // Usuario existe, verificamos cambios
+                        const userInDb = await response.json();
+                        const hasChanges = this.checkForChanges(userInDb, userData);
+
+                        if (hasChanges) {
+                            await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`,
+                                },
+                                body: JSON.stringify(userData),
+                            });
+                        }
+                    } else {
+                        throw new Error('Error al verificar el usuario en la base de datos');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
                 }
-            } else {
-                throw new Error('Error al verificar el usuario en la base de datos');
             }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-},
-checkForChanges(userInDb, userData) {
-    // Compara cada campo relevante
-    return (
-        userInDb.nombre !== userData.nombre ||
-        userInDb.apellido !== userData.apellido ||
-        userInDb.prefijo !== userData.prefijo ||
-        userInDb.numero_telefono !== userData.numero_telefono ||
-        userInDb.email !== userData.email ||
-        userInDb.username !== userData.username
-    );
-},
+        },
+        checkForChanges(userInDb, userData) {
+            // Compara cada campo relevante
+            return (
+                userInDb.nombre !== userData.nombre ||
+                userInDb.apellido !== userData.apellido ||
+                userInDb.prefijo !== userData.prefijo ||
+                userInDb.numero_telefono !== userData.numero_telefono ||
+                userInDb.email !== userData.email ||
+                userInDb.username !== userData.username
+            );
+        },
     },
     mounted() {
         this.get_user_data();

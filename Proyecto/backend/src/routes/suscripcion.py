@@ -5,12 +5,13 @@ from datetime import datetime
 from bson import ObjectId
 import stripe
 import logging
+from .auth import require_common_user, require_admin_role, require_common_or_admin_user
 
 suscripciones = APIRouter()
 logging.basicConfig(level=logging.INFO)
 
 @suscripciones.get("/suscripciones", tags=["suscripciones"])
-async def obtener_suscripciones():
+async def obtener_suscripciones(current_user: dict = Depends(require_admin_role)):
     try:
         # 1. Obtener todas las ventas del usuario
         suscripciones = list(conn.alloxentric_db.suscripciones.find())
@@ -50,9 +51,9 @@ async def obtener_suscripciones():
         raise HTTPException(status_code=500, detail="Error obteniendo las suscripciones")
     
 @suscripciones.get("/suscripciones/{id_usuario}", tags=["suscripciones"])
-async def obtener_suscripciones(id_usuario: str):
+async def obtener_suscripciones(id_usuario: str, current_user: dict = Depends(require_common_or_admin_user)):
     try:
-        # 1. Obtener todas las ventas del usuario
+        # 1. Obtener toda la sucripcion del usuario
         suscripciones = list(conn.alloxentric_db.suscripciones.find({"id_usuario": id_usuario}))
         
         # 2. Para cada venta, obtener los detalles del plan correspondiente
@@ -147,6 +148,7 @@ async def actualizar_suscripcion(subscriptionId: str, newPriceId: str):
         # Sumar los créditos del nuevo plan a los créditos restantes
         creditos_totales = creditos_restantes + creditos_nuevos
         print(f"Los creditos totales son: {creditos_totales}")
+        
         # Actualizar los datos de la suscripción en la base de datos, incluyendo los créditos totales
         updated_subscription = stripe.Subscription.modify(
             subscriptionId,
@@ -154,8 +156,8 @@ async def actualizar_suscripcion(subscriptionId: str, newPriceId: str):
                 'id': subscription_item_id,
                 'price': newPriceId,
             }],
-            trial_end="now",  # Cobro inmediato
-            proration_behavior='create_prorations'  # Prorrateo para ajustar el precio
+            trial_end="now"  # Cobro inmediato
+            #proration_behavior='always_invoice'  # Prorrateo para ajustar el precio
         )
 
         fecha_vencimiento = datetime.fromtimestamp(updated_subscription['current_period_end'])
