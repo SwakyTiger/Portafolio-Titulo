@@ -51,7 +51,7 @@
                             </v-list-item>
                         </v-list>
                         <v-btn x-large color="#42b983" dark class="mt-8"
-                            :href="`http://34.176.251.141:8081/realms/Transcriptor/account/`" target="_blank">
+                            :href="`http://34.176.135.227:8081/realms/Transcriptor/account/`" target="_blank">
                             Editar
                         </v-btn>
 
