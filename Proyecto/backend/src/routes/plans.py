@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException, status, Response, Depends
+from fastapi import APIRouter, HTTPException, status, Response
 from src.config.db import conn
 from ..schemas.schemas import planEntity, plansEntity
 from ..models.models import Plan
 from starlette.status import HTTP_204_NO_CONTENT
 from datetime import datetime
 import stripe
+
 
 plans = APIRouter()
 

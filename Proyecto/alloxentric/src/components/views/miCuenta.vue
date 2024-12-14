@@ -50,6 +50,7 @@
                                 <v-list-item-subtitle>{{ phoneNumber }}</v-list-item-subtitle>
                             </v-list-item>
                         </v-list>
+                        <!-- URL  -->
                         <v-btn x-large color="#42b983" dark class="mt-8"
                             :href="`http://34.176.135.227:8081/realms/Transcriptor/account/`" target="_blank">
                             Editar
@@ -75,7 +76,6 @@ export default {
             email: '',
             phoneNumber: '',
             isAuthenticated: false,
-            errorMessage: '', // Variable para manejar mensajes de error
         };
     },
     methods: {
@@ -84,7 +84,6 @@ export default {
                 keycloak.logout({
                     redirectUri: window.location.origin
                 });
-                localStorage.removeItem('token');
             } else {
                 keycloak.login();
             }
@@ -93,14 +92,16 @@ export default {
             if (keycloak.authenticated) {
                 const token = keycloak.tokenParsed;
 
-                this.fullName = token.given_name || '';
+                this.fullName = token.given_name || '';  // Se asume que el nombre está en given_name
                 this.userName = token.preferred_username || '';
                 this.email = token.email || '';
 
+                // Propiedades personalizadas
                 const phonePrefix = token.prefijo || '';
                 const phoneNumber = token.telefono || '';
                 this.phoneNumber = `${phonePrefix} ${phoneNumber}`.trim();
 
+                // Ahora verificamos si los datos del usuario en Keycloak coinciden con los datos almacenados
                 const userData = {
                     id_usuario: token.sub,
                     nombre: token.given_name || '',
@@ -125,6 +126,7 @@ export default {
                         });
 
                     } else if (response.ok) {
+                        // Usuario existe, verificamos cambios
                         const userInDb = await response.json();
                         const hasChanges = this.checkForChanges(userInDb, userData);
 
@@ -132,21 +134,21 @@ export default {
                             await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
                                 method: 'PUT', 
                                 headers: {
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify(userData),
                             });
                         } 
                     } else {
-                        this.errorMessage = 'Error al verificar el usuario en la base de datos';
+                        throw new Error('Error al verificar el usuario en la base de datos');
                     }
                 } catch (error) {
-                    this.errorMessage = 'Error al obtener los datos del usuario';
                     console.error('Error:', error);
                 }
             }
         },
         checkForChanges(userInDb, userData) {
+            // Compara cada campo relevante
             return (
                 userInDb.nombre !== userData.nombre ||
                 userInDb.apellido !== userData.apellido ||
@@ -158,6 +160,7 @@ export default {
         },
     },
     mounted() {
+        // Verificar el estado de autenticación al montar el componente
         this.isAuthenticated = keycloak.authenticated;
         keycloak.onAuthLogout = () => {
             this.isAuthenticated = false;

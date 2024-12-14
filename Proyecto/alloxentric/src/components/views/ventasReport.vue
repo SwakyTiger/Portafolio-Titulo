@@ -170,21 +170,11 @@ export default {
   methods: {
     async fetchVentas() {
       try {
-        // Realiza la solicitud a la API incluyendo el token en el encabezado
         const response = await axios.get(`${config.BASE_URL}:8000/ventas`);
         this.ventas = response.data.ventas;
         this.calculateTotalVenta();
       } catch (error) {
         console.error('Error fetching ventas:', error);
-         // Manejo específico para el error de token expirado
-         if (error.response && error.response.status === 401 && error.response.data.detail === "Token has expired. Please log in again.") {
-          this.errorMessage = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
-          this.showAlert = true;
-
-        } else {
-          this.errorMessage = error.response?.data?.detail || "Error al eliminar el plan.";
-          this.showAlert = true;
-        }
       }
     },
     showDetails(venta) {

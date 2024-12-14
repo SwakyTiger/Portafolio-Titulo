@@ -5,8 +5,6 @@ from datetime import datetime
 from bson import ObjectId
 import stripe
 import logging
-from .auth import require_admin_role, require_common_or_admin_user , require_common_user
-
 
 pagos = APIRouter()
 logging.basicConfig(level=logging.INFO)

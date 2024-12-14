@@ -16,8 +16,7 @@ import dotenv
 dotenv.load_dotenv()
 
 stripekey = os.getenv('API_STRIPE')
-#app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None) #ajuste para que no se acceda a docs ni redocs
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None) #ajuste para que no se acceda a docs ni redocs
 stripe.api_key = os.getenv('API_STRIPE')
 
 app.include_router(plans)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Response, Query, Depends
+from fastapi import APIRouter, HTTPException, status, Response, Query
 from typing import Optional, List
 from src.config.db import conn
 from ..schemas.schemas import ventaEntity, ventasEntity
@@ -9,7 +9,6 @@ import logging
 
 
 ventas = APIRouter()
-
 
 @ventas.get('/ventas', tags=["ventas"])
 async def get_ventas(year: Optional[int] = None, month: Optional[int] = None, estado: Optional[str] = Query(None)):
@@ -27,9 +26,10 @@ async def get_ventas(year: Optional[int] = None, month: Optional[int] = None, es
             }
         elif month:
             # Esto requiere que tengas un año predeterminado, podrías omitirlo si no es práctico
-            raise HTTPException(
-                status_code=400, detail="El mes debe incluir el año.")
+            raise HTTPException(status_code=400, detail="El mes debe incluir el año.")
 
+
+        
         ventas_list = list(conn.alloxentric_db.ventas.find(query))
         planes_list = {
             plan["id_plan"]: plan for plan in conn.alloxentric_db.planes.find({})}
@@ -43,32 +43,29 @@ async def get_ventas(year: Optional[int] = None, month: Optional[int] = None, es
             plan_info = planes_list.get(venta["id_plan"], {})
             usuario_info = usuarios_list.get(venta["id_usuario"], {})
             response.append({"id_suscripcion": venta["id_suscripcion"],
-                            "id_usuario": venta["id_usuario"],
-                             "id_plan": venta["id_plan"],
-                             "fecha_venta": venta["fecha_venta"].isoformat(),
-                             "fecha_vencimiento": venta["fecha_vencimiento"].isoformat(),
-                             "total_pagado": venta["total_pagado"],
-                             "plan_info": {"nombre": plan_info.get("nombre", "Sin plan"),
-                                           "precio": plan_info.get("precio", 0),
-                                           "fecha_modificacion": plan_info.get("fecha_modificacion", "")},
-                             "usuario_info": {"username": usuario_info.get("username", "Sin usuario"),
-                                              "nombre": usuario_info.get("nombre", "Sin usuario"),
-                                              "apellido": usuario_info.get("apellido", ""),
-                                              "email": usuario_info.get("email", ""),
-                                              "prefijo": usuario_info.get("prefijo", ""),
-                                              "numero_telefono": usuario_info.get("numero_telefono", 0)}
-                             })
+                            "id_usuario": venta["id_usuario"], 
+                            "id_plan": venta["id_plan"],
+                            "fecha_venta": venta["fecha_venta"].isoformat(),
+                            "fecha_vencimiento": venta["fecha_vencimiento"].isoformat(),
+                            "total_pagado": venta["total_pagado"],
+                            "plan_info": {"nombre": plan_info.get("nombre", "Sin plan"),
+                                        "precio": plan_info.get("precio", 0),
+                                        "fecha_modificacion": plan_info.get("fecha_modificacion", "")},
+                            "usuario_info": {"username": usuario_info.get("username", "Sin usuario"),
+                                            "nombre": usuario_info.get("nombre", "Sin usuario"),
+                                            "apellido": usuario_info.get("apellido", ""),
+                                            "email": usuario_info.get("email", ""),
+                                            "prefijo": usuario_info.get("prefijo", ""),
+                                            "numero_telefono": usuario_info.get("numero_telefono", 0)}
+            })
         return {"ventas": response, "total_clientes": total_clientes}
     except Exception as e:
         print(f"Error al obtener ventas: {e}")
         return {"error": str(e)}, 500
 
-ventas.post('/ventas', tags=["ventas"])  # ELIMINAR LUEGO DE REVISION
-
-
+ventas.post('/ventas', tags=["ventas"]) # ELIMINAR LUEGO DE REVISION
 def create_venta(venta: Venta):
-    existing_venta = conn.alloxentric_db.ventas.find_one(
-        {"id_suscripcion": venta.id_suscripcion})
+    existing_venta = conn.alloxentric_db.ventas.find_one({"id_suscripcion": venta.id_suscripcion})
     if existing_venta:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -79,3 +76,6 @@ def create_venta(venta: Venta):
 
     venta = conn.alloxentric_db.ventas.find_one({"_id": id})
     return ventaEntity(venta)
+
+
+

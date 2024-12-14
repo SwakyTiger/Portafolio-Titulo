@@ -1,14 +1,12 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from src.config.db import conn
 from datetime import datetime
 import logging
-from .auth import require_admin_role, require_common_or_admin_user
-
 
 historial = APIRouter()
 
 @historial.get("/historial-transcrito", tags=["historial"])
-async def obtener_historial_transcrito(username: str, current_user: dict = Depends(require_common_or_admin_user)):
+async def obtener_historial_transcrito(username: str):
     try:
         # 1. Obtener el usuario correspondiente al username
         usuario = conn.alloxentric_db.usuario.find_one({"username": username})
