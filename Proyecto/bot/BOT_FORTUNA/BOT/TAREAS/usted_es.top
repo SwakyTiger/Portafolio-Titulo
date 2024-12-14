@@ -13,14 +13,14 @@ t: ()
         Bienvenido a Transcriptor Alloxentric ⭐ $br
         $mensaje = $firstmsghandled
 
-        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/separarMensaje_numero" 
+        $_endpoint = ^"http://34.176.135.227:8000/separarMensaje_numero" 
         $_header = ^"accept: application/json"
         $_url = ^join($_endpoint ? mensaje = $mensaje)
         $$dato = ^jsonopen(direct GET $_url "" $_header)
         $$dato =  ^jsonparse(transient NOFAIL $$dato )
         $numero_tel = $$dato.telefono
 
-        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/separarMensaje_msg" 
+        $_endpoint = ^"http://34.176.135.227:8000/separarMensaje_msg" 
         $_header = ^"accept: application/json"
         $_url = ^join($_endpoint ? mensaje = $mensaje)
         $$dato = ^jsonopen(direct GET $_url "" $_header)
@@ -28,7 +28,7 @@ t: ()
         $mensaje = $$dato.mensaje
 
 
-        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/bot" 
+        $_endpoint = ^"http://34.176.135.227:8000/bot" 
         $_header = ^"accept: application/json"
         $_url = ^join($_endpoint / $numero_tel)
         $$dato = ^jsonopen(direct GET $_url "" $_header)
@@ -48,7 +48,7 @@ t: ()
                 }else if($creditos != 0){
                         if($mensaje != null){
                                 # Llamar al endpoint de transcripción
-                                $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/transcribir-audio-2/"
+                                $_endpoint = ^"http://34.176.135.227:8000/transcribir-audio-2/"
                                 $_url = ^join($_endpoint ? audio_url = $mensaje)
                                 $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
 
@@ -63,12 +63,12 @@ t: ()
                                         La transcripción del audio es: $br 
                                         $transcripcion $br 
 
-                                        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/restar-creditos"
+                                        $_endpoint = ^"http://34.176.135.227:8000/restar-creditos"
                                         $_url = ^join($_endpoint / $username)
                                         $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
                                         $$data = ^jsonopen(direct PUT $_url "" $_header)
 
-                                        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/guardar-transcrito"
+                                        $_endpoint = ^"http://34.176.135.227:8000/guardar-transcrito"
                                         $_url = ^join($_endpoint ? id_usuario = $id_usuario & username = $username & transcrito = $transcripcion)
                                         $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
                                         $$data = ^jsonopen(direct POST $_url "" $_header)
@@ -114,7 +114,7 @@ a: (_*)
                 $x.argumentoComando.codigo = BZ
         [^jsonwrite($x)]
 
-        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/separarMensaje_msg" 
+        $_endpoint = ^"http://34.176.135.227:8000/separarMensaje_msg" 
         $_header = ^"accept: application/json"
         $_url = ^join($_endpoint ? mensaje = $opcion )
         $$dato = ^jsonopen(direct GET $_url "" $_header)
@@ -122,7 +122,7 @@ a: (_*)
         $opcion = $$dato.mensaje
 
         if($opcion == 1){
-                $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/bot" 
+                $_endpoint = ^"http://34.176.135.227:8000/bot" 
                 $_header = ^"accept: application/json"
                 $_url = ^join($_endpoint / $numero_tel)
                 $$dato = ^jsonopen(direct GET $_url "" $_header)
@@ -143,10 +143,10 @@ a: (_*)
                 }
 		        
 	}else if($opcion == 2){
-		Para contratar un plan, encontrarás el catalogo de planes para nuestro Transcriptor en el siguiente link http://localhost:8080/planDetails . $br
+		Para contratar un plan, encontrarás el catalogo de planes para nuestro Transcriptor en el siguiente link http://34.176.135.227:8080/planDetails . $br
 	        $estado = ~algo_mas 
 	}else if($opcion == 3){
-		Para acceder a los ajustes de tu cuenta ingrese al siguiente link: http://localhost:8080/miCuenta, asegúrate de iniciar sesion. $br
+		Para acceder a los ajustes de tu cuenta ingrese al siguiente link: http://34.176.135.227:8080/miCuenta, asegúrate de iniciar sesion. $br
 	        $estado = ~algo_mas
 	}else {
 		La opción ingresada no es válida. $br
@@ -165,7 +165,7 @@ u: ()  # Captura cualquier otra entrada que no sea el comando específico
 a: (_*)
 
         $audioFile = '_0
-        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/separarMensaje_msg" 
+        $_endpoint = ^"http://34.176.135.227:8000/separarMensaje_msg" 
         $_header = ^"accept: application/json"
         $_url = ^join($_endpoint ? mensaje = $audioFile )
         $$dato = ^jsonopen(direct GET $_url "" $_header)
@@ -174,7 +174,7 @@ a: (_*)
 
         if($audioFile != null)
         {# Llamar al endpoint de transcripción
-        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/transcribir-audio-2/"
+        $_endpoint = ^"http://34.176.135.227:8000/transcribir-audio-2/"
         $_url = ^join($_endpoint ? audio_url = $audioFile)
         $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
 
@@ -188,13 +188,13 @@ a: (_*)
         La transcripción del audio es: $br
         $transcripcion $br
 
-        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/restar-creditos"
+        $_endpoint = ^"http://34.176.135.227:8000/restar-creditos"
         $_url = ^join($_endpoint / $username)
         $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
         $$data = ^jsonopen(direct PUT $_url "" $_header)
 
 
-        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/guardar-transcrito"
+        $_endpoint = ^"http://34.176.135.227:8000/guardar-transcrito"
         $_url = ^join($_endpoint ? id_usuario = $id_usuario & username = $username & transcrito = $transcripcion)
         $_header = ^" ~Accept: application/json ~Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
         $$data = ^jsonopen(direct POST $_url "" $_header)
@@ -230,7 +230,7 @@ a: (_*)
 	$x.argumentoComando.codigo = DM
 	[^jsonwrite($x)]
 
-        $_endpoint = ^"https://81bbr9vr-8000.brs.devtunnels.ms/separarMensaje_msg" 
+        $_endpoint = ^"http://34.176.135.227:8000/separarMensaje_msg" 
         $_header = ^"accept: application/json"
         $_url = ^join($_endpoint ? mensaje = $algo_mas )
         $$dato = ^jsonopen(direct GET $_url "" $_header)

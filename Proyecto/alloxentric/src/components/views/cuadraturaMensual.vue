@@ -37,7 +37,7 @@
                   </v-list-item-icon>
                   <v-list-item-content>
                     <v-list-item-title class="white--text totales ">Total Vendido</v-list-item-title>
-                    <v-list-item-subtitle class="white--text font-weight-medium">{{ formatCurrency(totalVenta)
+                    <v-list-item-subtitle class="white--text font-weight-medium">{{ formatCurrency(totalVenta/100)
                       }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>

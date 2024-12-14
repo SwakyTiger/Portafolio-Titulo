@@ -155,7 +155,6 @@ async def actualizar_suscripcion(subscriptionId: str, newPriceId: str):
                 'price': newPriceId,
             }],
             trial_end="now",  # Cobro inmediato
-            proration_behavior='create_prorations'  # Prorrateo para ajustar el precio
         )
 
         fecha_vencimiento = datetime.fromtimestamp(updated_subscription['current_period_end'])
