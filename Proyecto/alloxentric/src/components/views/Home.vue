@@ -91,22 +91,27 @@ export default {
         async get_user_data() {
             if (keycloak.authenticated) {
                 const token = keycloak.token; // Obtén el token JWT
+                try{
+                    document.cookie = `token=${token}; path=/; secure; SameSite=Strict`;
+                    console.log("token generado")}
+                catch (error){
+                    console.log('Error al obtener el token' + error)
+                }
                 // Almacena el token en una cookie
-                document.cookie = `token=${token}; path=/; secure; SameSite=Strict`;
+                const base64Url = token.split('.')[1]; // Parte del payload
+                const decodedPayload = JSON.parse(atob(base64Url));
 
                 // Realiza la llamada a tu API
                 const userData = {
-                    id_usuario: token.sub,
-                    nombre: token.given_name || '',
-                    apellido: token.family_name || '',
-                    prefijo: token.prefijo || '',
-                    numero_telefono: token.telefono ? parseInt(token.telefono) : null,
-                    email: token.email || '',
-                    username: token.preferred_username || '',
+                    id_usuario: decodedPayload.sub,
+                    nombre: decodedPayload.given_name || '',
+                    apellido: decodedPayload.family_name || '',
+                    prefijo: decodedPayload.prefijo || '',
+                    numero_telefono: decodedPayload.telefono ? parseInt(decodedPayload.telefono) : null,
+                    email: decodedPayload.email || '',
+                    username: decodedPayload.preferred_username || '',
                 };
 
-                // Llama a tu API para guardar o actualizar el usuario
-                await this.get_user_data(userData);
 
                 try {
                     const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {

@@ -16,7 +16,8 @@ import dotenv
 dotenv.load_dotenv()
 
 stripekey = os.getenv('API_STRIPE')
-app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None) #ajuste para que no se acceda a docs ni redocs
+#app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None) #ajuste para que no se acceda a docs ni redocs
+app = FastAPI()
 stripe.api_key = os.getenv('API_STRIPE')
 
 app.include_router(plans)
@@ -37,7 +38,7 @@ async def add_keycloak_to_request(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://34.176.135.227:8080"],  # Cambia según la URL de tu frontend
+    allow_origins=["http://34.176.251.141:8080"],  # Cambia según la URL de tu frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
