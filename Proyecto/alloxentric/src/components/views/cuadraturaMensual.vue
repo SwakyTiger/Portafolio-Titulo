@@ -174,20 +174,7 @@ export default {
   methods: {
     async fetchVentas() {
       try {
-        const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
-
-        if (!token) {
-          this.errorMessage = "Token no disponible. Por favor, inicia sesión.";
-          this.showAlert = true;
-          return;
-        }
-
-        const response = await axios.get(`${config.BASE_URL}:8000/suscripciones`, {
-          headers: {
-            'Authorization': `Bearer ${token}`, // Incluye el token en el encabezado
-            'Content-Type': 'application/json',
-          },
-        });
+        const response = await axios.get(`${config.BASE_URL}:8000/suscripciones`);
         this.ventas = response.data.ventas; 
         this.totalClientes = response.data.total_clientes;
         this.calculateTotalVenta();

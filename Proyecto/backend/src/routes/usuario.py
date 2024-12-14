@@ -4,18 +4,17 @@ from ..schemas.schemas import usuarioEntity, usuariosEntity
 from ..models.models import Usuario
 from starlette.status import HTTP_204_NO_CONTENT
 import requests
-from .auth import require_common_user, require_admin_role, require_common_or_admin_user
 
 usuarios = APIRouter()
 usuarios_collection = conn.alloxentric_db.usuario
 
 
 @usuarios.get('/usuarios', tags=["Usuarios"])
-def find_all_usuarios(current_user: dict = Depends(require_admin_role)):
+def find_all_usuarios():
     return usuariosEntity(conn.alloxentric_db.usuario.find())
 
 @usuarios.get('/usuarios/{keycloak_id}', tags=["Usuarios"])
-async def get_usuario_by_keycloak_id(keycloak_id: str, current_user: dict = Depends(require_common_or_admin_user)):
+async def get_usuario_by_keycloak_id(keycloak_id: str):
     usuario = conn.alloxentric_db.usuario.find_one({"id_usuario": keycloak_id})
 
     if usuario:
@@ -23,7 +22,7 @@ async def get_usuario_by_keycloak_id(keycloak_id: str, current_user: dict = Depe
     raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
 @usuarios.post('/usuarios', status_code=status.HTTP_201_CREATED, tags=["Usuarios"])
-async def create_usuario(usuario: Usuario, current_user: dict = Depends(require_common_or_admin_user)):
+async def create_usuario(usuario: Usuario):
     if conn.alloxentric_db.usuario.find_one({"id_usuario": usuario.id_usuario}):
         raise HTTPException(status_code=400, detail="El usuario ya existe")
 
@@ -32,7 +31,7 @@ async def create_usuario(usuario: Usuario, current_user: dict = Depends(require_
     return {"message": "Usuario guardado correctamente", "id": str(result.inserted_id)}
 
 @usuarios.put('/usuarios/{id}', response_model=Usuario, tags=["Usuarios"])
-def update_usuario(id: str, usuario: Usuario, current_user: dict = Depends(require_common_or_admin_user)):
+def update_usuario(id: str, usuario: Usuario):
     result = conn.alloxentric_db.usuario.find_one_and_update(
         {"id_usuario": id},
         {"$set": dict(usuario)},
@@ -46,7 +45,7 @@ def update_usuario(id: str, usuario: Usuario, current_user: dict = Depends(requi
     return usuarioEntity(result)
 
 @usuarios.delete('/usuarios/{id}', status_code=status.HTTP_204_NO_CONTENT, tags=["Usuarios"])
-def delete_usuario(id: str, current_user: dict = Depends(require_admin_role)):
+def delete_usuario(id: str):
     result = conn.alloxentric_db.usuario.find_one_and_delete({"id_usuario": id})
     if not result:
         raise HTTPException(

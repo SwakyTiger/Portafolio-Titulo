@@ -112,43 +112,31 @@ export default {
                 };
 
                 try {
-                    const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
-
-                    if (!token) {
-                        this.errorMessage = "Token no disponible. Por favor, inicia sesión.";
-                        return;
-                    }
-
-                    const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                        },
-                    });
+                    const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`);
 
                     if (response.status === 404) {
+                        // Usuario no existe, lo guardamos
                         await fetch(`${config.BASE_URL}:8000/usuarios`, {
                             method: 'POST',
                             headers: {
-                                'Authorization': `Bearer ${token}`,
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify(userData),
                         });
+
                     } else if (response.ok) {
                         const userInDb = await response.json();
                         const hasChanges = this.checkForChanges(userInDb, userData);
 
                         if (hasChanges) {
                             await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
-                                method: 'PUT',
+                                method: 'PUT', 
                                 headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
                                 },
                                 body: JSON.stringify(userData),
                             });
-                        }
+                        } 
                     } else {
                         this.errorMessage = 'Error al verificar el usuario en la base de datos';
                     }

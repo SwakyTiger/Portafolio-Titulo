@@ -166,22 +166,10 @@ export default {
       this.showAlert = false;
     },
     async savePlan() {
-      const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
-
-      if (!token) {
-        this.errorMessage = "Token no disponible. Por favor, inicia sesión.";
-        this.showAlert = true;
-        return;
-      }
 
       try {
         const planData = { ...this.newPlan, fecha_modificacion: new Date().toISOString() };
-        await axios.post(`${config.BASE_URL}:8000/plans`, planData, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        await axios.post(`${config.BASE_URL}:8000/plans`, planData);
         this.createDialog = false;
         this.fetchPlanes();
       } catch (error) {
@@ -195,21 +183,9 @@ export default {
     },
     async updatePlan() {
       try {
-        const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
-
-        if (!token) {
-          this.errorMessage = "Token no disponible. Por favor, inicia sesión.";
-          this.showAlert = true;
-          return;
-        }
 
         this.selectedPlan.fecha_modificacion = new Date().toISOString();
-        await axios.post(`${config.BASE_URL}:8000/plans/${this.selectedPlan.id_plan}`, this.selectedPlan, {
-          headers: {
-            'Authorization': `Bearer ${token}`, // Incluye el token en el encabezado
-            'Content-Type': 'application/json',
-          },
-        });
+        await axios.post(`${config.BASE_URL}:8000/plans/${this.selectedPlan.id_plan}`, this.selectedPlan);
         this.dialog = false;
         this.fetchPlanes();
       } catch (error) {
@@ -223,26 +199,12 @@ export default {
     },
     async confirmDeletePlan() {
       try {
-        const token = document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1];
-
-        if (!token) {
-          this.errorMessage = "Token no disponible. Por favor, inicia sesión.";
-          this.showAlert = true;
-          return;
-        }
-
-        await axios.delete(`${config.BASE_URL}:8000/plans/${this.selectedPlan.id_plan}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`, // Incluye el token en el encabezado
-            'Content-Type': 'application/json',
-          },
-        });
+        await axios.delete(`${config.BASE_URL}:8000/plans/${this.selectedPlan.id_plan}`);
         this.dialog = false;
         this.deleteDialog = false;
         this.fetchPlanes();
       } catch (error) {
         console.error("Error deleting Plan:", error.response?.data || error);
-
       }
     },
   },

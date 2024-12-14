@@ -188,7 +188,7 @@ methods: {
   },
   async performCancelSubscription() {
     try {
-      const response = await axios.post(`http://localhost:8000/cancelar_suscripcion/${this.subscription.id_suscripcion}`);
+      const response = await axios.post(`${config.BASE_URL}:8000/cancelar_suscripcion/${this.subscription.id_suscripcion}`);
       
       if (response.data.message) {
         await this.fetchSubscriptionData();

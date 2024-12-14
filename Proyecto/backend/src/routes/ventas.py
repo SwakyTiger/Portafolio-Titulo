@@ -6,14 +6,13 @@ from ..models.models import Venta
 from starlette.status import HTTP_204_NO_CONTENT
 from datetime import datetime
 import logging
-from .auth import require_admin_role
 
 
 ventas = APIRouter()
 
 
 @ventas.get('/ventas', tags=["ventas"])
-async def get_ventas(year: Optional[int] = None, month: Optional[int] = None, estado: Optional[str] = Query(None), current_user: dict = Depends(require_admin_role)):
+async def get_ventas(year: Optional[int] = None, month: Optional[int] = None, estado: Optional[str] = Query(None)):
     try:
         query = {}
         if year and month:

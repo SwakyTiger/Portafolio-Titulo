@@ -91,13 +91,7 @@ export default {
         async get_user_data() {
             if (keycloak.authenticated) {
                 const token = keycloak.token; // Obtén el token JWT
-                try{
-                    document.cookie = `token=${token}; path=/; secure; SameSite=Strict`;
-                    console.log("token generado")}
-                catch (error){
-                    console.log('Error al obtener el token' + error)
-                }
-                // Almacena el token en una cookie
+
                 const base64Url = token.split('.')[1]; // Parte del payload
                 const decodedPayload = JSON.parse(atob(base64Url));
 
@@ -114,18 +108,13 @@ export default {
 
 
                 try {
-                    const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                        },
-                    });
+                    const response = await fetch(`${config.BASE_URL}:8000/usuarios/${userData.id_usuario}`);
+                    
                     if (response.status === 404) {
                         // Usuario no existe, lo guardamos
                         await fetch(`${config.BASE_URL}:8000/usuarios`, {
                             method: 'POST',
                             headers: {
-                                'Authorization': `Bearer ${token}`,
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify(userData),
@@ -140,7 +129,6 @@ export default {
                                 method: 'PUT',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`,
                                 },
                                 body: JSON.stringify(userData),
                             });

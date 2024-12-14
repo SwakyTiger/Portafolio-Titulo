@@ -5,13 +5,12 @@ from datetime import datetime
 from bson import ObjectId
 import stripe
 import logging
-from .auth import require_common_user, require_admin_role, require_common_or_admin_user
 
 suscripciones = APIRouter()
 logging.basicConfig(level=logging.INFO)
 
 @suscripciones.get("/suscripciones", tags=["suscripciones"])
-async def obtener_suscripciones(current_user: dict = Depends(require_admin_role)):
+async def obtener_suscripciones():
     try:
         # 1. Obtener todas las ventas del usuario
         suscripciones = list(conn.alloxentric_db.suscripciones.find())
@@ -51,7 +50,7 @@ async def obtener_suscripciones(current_user: dict = Depends(require_admin_role)
         raise HTTPException(status_code=500, detail="Error obteniendo las suscripciones")
     
 @suscripciones.get("/suscripciones/{id_usuario}", tags=["suscripciones"])
-async def obtener_suscripciones(id_usuario: str, current_user: dict = Depends(require_common_or_admin_user)):
+async def obtener_suscripciones(id_usuario: str):
     try:
         # 1. Obtener toda la sucripcion del usuario
         suscripciones = list(conn.alloxentric_db.suscripciones.find({"id_usuario": id_usuario}))
